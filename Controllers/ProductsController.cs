@@ -15,42 +15,26 @@ namespace RefactorThis.Controllers
         IProductRepository _productRepository; //declare (ProductRepository productRepository)class member at first, have changed to interfece.
         public ProductsController(IProductRepository productRepository)
         {
-            _productRepository = productRepository;    
-        //productRepository = new ProductRepository();
+            _productRepository = productRepository;
+            //productRepository = new ProductRepository();
         }//constructor. every time you use productController, a new productRepository will be created.
 
         [HttpGet]
-        //public Products Get()
-        //{
-        //    return new Products();
-        //}
         public async Task<ActionResult> Get()
         {
-
-            // 1. Declare a new dto list
             var productsDto = new List<GetProductDto>();
-            // 2. loop products (old)
-            //var products = new Products();
-
-
             var products = await _productRepository.GetProducts();
-
             foreach (var product in products)
             {
-                // 3. Make a new ProductDto
                 var productDto = new GetProductDto();
-
-                // 4. Assign old to new
                 productDto.Id = Guid.Parse(product.Id);
                 productDto.Price = product.Price;
                 productDto.DeliveryPrice = product.DeliveryPrice;
                 productDto.Name = product.Name;
                 productDto.Description = product.Description;
-                // 5. Add new into the new list
+
                 productsDto.Add(productDto);
             }
-
-            // 6. Return new list.
             return Ok(productsDto);
         }
 
