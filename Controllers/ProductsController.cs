@@ -20,41 +20,41 @@ namespace RefactorThis.Controllers
         }//constructor. every time you use productController, a new productRepository will be created.
 
         [HttpGet]
-        public async Task<ActionResult> Get()
-        {
-            var productsDto = new List<GetProductDto>(); 
-            var products = await _productRepository.GetProducts();
-            foreach (var product in products)
-            {
-                var productDto = new GetProductDto();
-                productDto.Id = Guid.Parse(product.Id);
-                productDto.Price = product.Price;
-                productDto.DeliveryPrice = product.DeliveryPrice;
-                productDto.Name = product.Name;
-                productDto.Description = product.Description;
-
-                productsDto.Add(productDto);
-            }
-            return Ok(productsDto);
-        }
-
-        [HttpGet("{name}")]// todo 
         public async Task<ActionResult> Get(string name)
         {
-            //var product = new Product(id.ToString());
-            var product = await _productRepository.GetByName(name);
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                var productsDto = new List<GetProductDto>(); 
+                var products = await _productRepository.GetProducts();
+                foreach (var product in products) //todo don't repeat yourself
+                {
+                    var productDto = new GetProductDto();
+                    productDto.Id = Guid.Parse(product.Id);
+                    productDto.Price = product.Price;
+                    productDto.DeliveryPrice = product.DeliveryPrice;
+                    productDto.Name = product.Name;
+                    productDto.Description = product.Description;
 
-            if (product == null)
-                return NotFound();
-
-            var productDto = new GetProductDto();
-            productDto.Id = Guid.Parse(product.Id);
-            productDto.Price = product.Price;
-            productDto.DeliveryPrice = product.DeliveryPrice;
-            productDto.Name = product.Name;
-            productDto.Description = product.Description;
-
-            return Ok(productDto);
+                    productsDto.Add(productDto);
+                }
+                return Ok(productsDto);
+            }
+            else
+            {
+                var productsDto = new List<GetProductDto>();
+                var products = await _productRepository.GetByName(name);
+                foreach (var product in products)
+                {
+                    var productDto = new GetProductDto();
+                    productDto.Id = Guid.Parse(product.Id);
+                    productDto.Price = product.Price;
+                    productDto.DeliveryPrice = product.DeliveryPrice;
+                    productDto.Name = product.Name;
+                    productDto.Description = product.Description;
+                    productsDto.Add(productDto);
+                }
+                    return Ok(productsDto);
+                }
         }
 
         [HttpGet("{id}")]
@@ -94,9 +94,7 @@ namespace RefactorThis.Controllers
             product.Price = productDto.Price;
             product.DeliveryPrice = productDto.DeliveryPrice;
             product.Name = productDto.Name;
-
             product.Description = productDto.Description;
-
 
             await _productRepository.Add(product);
             return Ok(product.Id);
@@ -104,8 +102,8 @@ namespace RefactorThis.Controllers
         }
 
         [HttpPut("{id}")]
-        //public async Task<ActionResult> Update(Guid id, SaveProductDto productDto)
-        //{
+        public async Task<ActionResult> Update(Guid id, SaveProductDto productDto)
+        {
             //var orig = new Product(id.ToString())
             //{
             //    Name = product.Name,
@@ -122,9 +120,18 @@ namespace RefactorThis.Controllers
             // 3.  declare a new product
             // 4. assign the pass in values from productdto to product
             // 5. return OK() and new value
-            //}
+            var product = new Product();
+            product.Id = id.ToString();
+            product.Price = productDto.Price;
+            product.DeliveryPrice = productDto.DeliveryPrice;
+            product.Name = productDto.Name;
+            product.Description = productDto.Description;
+            
+            await _productRepository.Update(product);
+            return Ok($"The product with the id [{id}] has been update");
+        }
 
-            [HttpDelete("{id}")]
+        [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(Guid id)
         {
             var product = new Product(id.ToString());

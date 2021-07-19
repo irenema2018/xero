@@ -12,9 +12,10 @@ namespace RefactorThis.Repositories
         Task Add(Product product);
         Task<List<Product>> GetProducts();
         Task<Product> GetById(Guid id);
-        Task<Product> GetByName(string Name);
+        Task<List<Product>> GetByName(string Name);
+        Task Update(Product product);
         Task Delete(Guid id);
-        Task DeleteOptions(Guid id);
+        Task DeleteOptions(Guid id); 
     }
 
     public class ProductRepository : IProductRepository // repository is reponsible for database opertations -- crud
@@ -55,16 +56,17 @@ namespace RefactorThis.Repositories
 
         }
 
-        public async Task<Product> GetByName(string name)
+        public async Task<List<Product>> GetByName(string name)
         {
 
             using (var connection = Helpers.NewConnection())
             {
                 // if the pass in id is not a Guid, return an err msg BadRequest()
+                name = "%" + name + "%";
                 var parameters = new { name };
-                var result = await connection.QueryAsync<Product>($"select id, name, description, CAST(price AS REAL) as price, CAST(deliveryprice AS REAL) as deliveryprice from products where name = @name", parameters);
+                var result = await connection.QueryAsync<Product>($"select id, name, description, CAST(price AS REAL) as price, CAST(deliveryprice AS REAL) as deliveryprice from products where name like @name", parameters);
 
-                return result.FirstOrDefault();
+                return result.ToList();
             }
 
         }
@@ -98,7 +100,7 @@ namespace RefactorThis.Repositories
             using (var connection = Helpers.NewConnection())
             {
                 var parameters = new {product.Id, product.Name, product.Price, product.Description, product.DeliveryPrice };
-                await connection.ExecuteAsync($"update Products set name = @Name, description = @Description, price = @Price, deliveryprice = @DeliveryPrice where id = @Id)", parameters);
+                await connection.ExecuteAsync($"update Products set name = @Name, description = @Description, price = @Price, deliveryprice = @DeliveryPrice where id = @Id", parameters);
             }
         }
 
