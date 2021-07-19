@@ -22,7 +22,7 @@ namespace RefactorThis.Controllers
         [HttpGet]
         public async Task<ActionResult> Get()
         {
-            var productsDto = new List<GetProductDto>();
+            var productsDto = new List<GetProductDto>(); 
             var products = await _productRepository.GetProducts();
             foreach (var product in products)
             {
@@ -39,19 +39,20 @@ namespace RefactorThis.Controllers
         }
 
         [HttpGet("{id}")]
-        public ActionResult Get(Guid id)
+        public async Task<ActionResult> Get(Guid id)
         {
-            var product = new Product(id.ToString());
-            if (product.IsNew)
+            //var product = new Product(id.ToString());
+            var product = await _productRepository.GetById(id);
+
+            if (product == null)
                 return NotFound();
+
             var productDto = new GetProductDto();
             productDto.Id = Guid.Parse(product.Id);
             productDto.Price = product.Price;
             productDto.DeliveryPrice = product.DeliveryPrice;
             productDto.Name = product.Name;
             productDto.Description = product.Description;
-
-
 
             return Ok(productDto);
         }

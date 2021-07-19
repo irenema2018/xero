@@ -11,6 +11,7 @@ namespace RefactorThis.Repositories
     {
         Task Add(Product product);
         Task<List<Product>> GetProducts();
+        Task<Product> GetById(Guid id);
     }
 
     public class ProductRepository : IProductRepository // repository is reponsible for database opertations -- crud
@@ -37,7 +38,19 @@ namespace RefactorThis.Repositories
             //cmd.ExecuteNonQuery();
         }
 
-        public void GetById(Guid productId) { }
+        public async Task<Product> GetById(Guid id) 
+        {
+
+            using (var connection = Helpers.NewConnection())
+            {
+                // if the pass in id is not a Guid, return an err msg BadRequest()
+                var parameters = new { Id = id.ToString()};
+                var result = await connection.QueryAsync<Product>($"select id, name, description, CAST(price AS REAL) as price, CAST(deliveryprice AS REAL) as deliveryprice from products where id = @Id", parameters);
+
+                return result.FirstOrDefault(); 
+            }
+
+        }
 
         public async Task<List<Product>> GetProducts()
         {
