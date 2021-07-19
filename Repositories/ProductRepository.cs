@@ -12,6 +12,9 @@ namespace RefactorThis.Repositories
         Task Add(Product product);
         Task<List<Product>> GetProducts();
         Task<Product> GetById(Guid id);
+        Task<Product> GetByName(string Name);
+        Task Delete(Guid id);
+        Task DeleteOptions(Guid id);
     }
 
     public class ProductRepository : IProductRepository // repository is reponsible for database opertations -- crud
@@ -52,6 +55,20 @@ namespace RefactorThis.Repositories
 
         }
 
+        public async Task<Product> GetByName(string name)
+        {
+
+            using (var connection = Helpers.NewConnection())
+            {
+                // if the pass in id is not a Guid, return an err msg BadRequest()
+                var parameters = new { name };
+                var result = await connection.QueryAsync<Product>($"select id, name, description, CAST(price AS REAL) as price, CAST(deliveryprice AS REAL) as deliveryprice from products where name = @name", parameters);
+
+                return result.FirstOrDefault();
+            }
+
+        }
+
         public async Task<List<Product>> GetProducts()
         {
 
@@ -76,8 +93,31 @@ namespace RefactorThis.Repositories
 
         }
 
-        public void Update(Product product) { }
+        public async Task Update(Product product) 
+        {
+            using (var connection = Helpers.NewConnection())
+            {
+                var parameters = new {product.Id, product.Name, product.Price, product.Description, product.DeliveryPrice };
+                await connection.ExecuteAsync($"update Products set name = @Name, description = @Description, price = @Price, deliveryprice = @DeliveryPrice where id = @Id)", parameters);
+            }
+        }
 
-        public void Delete(Guid productId) { }
+        public async Task Delete(Guid id) 
+        {
+            using (var connection = Helpers.NewConnection())
+            {
+                var parameters = new { Id = id.ToString() };
+                await connection.ExecuteAsync($"delete from products where id = @Id",parameters);
+            }
+        }
+
+        public async Task DeleteOptions(Guid id)
+        {
+            using (var connection = Helpers.NewConnection())
+            {
+                var parameters = new { Id = id.ToString() };
+                await connection.ExecuteAsync($"delete from productoptions where productid = @Id", parameters);
+            }
+        }
     }
 }

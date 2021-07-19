@@ -38,6 +38,25 @@ namespace RefactorThis.Controllers
             return Ok(productsDto);
         }
 
+        [HttpGet("{name}")]// todo 
+        public async Task<ActionResult> Get(string name)
+        {
+            //var product = new Product(id.ToString());
+            var product = await _productRepository.GetByName(name);
+
+            if (product == null)
+                return NotFound();
+
+            var productDto = new GetProductDto();
+            productDto.Id = Guid.Parse(product.Id);
+            productDto.Price = product.Price;
+            productDto.DeliveryPrice = product.DeliveryPrice;
+            productDto.Name = product.Name;
+            productDto.Description = product.Description;
+
+            return Ok(productDto);
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult> Get(Guid id)
         {
@@ -57,6 +76,7 @@ namespace RefactorThis.Controllers
             return Ok(productDto);
         }
 
+
         [HttpPost]
         public async Task<ActionResult> Post(SaveProductDto productDto)
         {
@@ -74,41 +94,50 @@ namespace RefactorThis.Controllers
             product.Price = productDto.Price;
             product.DeliveryPrice = productDto.DeliveryPrice;
             product.Name = productDto.Name;
+
             product.Description = productDto.Description;
 
 
             await _productRepository.Add(product);
             return Ok(product.Id);
-
+            // err handling: duplicate name is not allowed
         }
 
         [HttpPut("{id}")]
-        public void Update(Guid id, Product product)
-        {
-            var orig = new Product(id.ToString())
-            {
-                Name = product.Name,
-                Description = product.Description,
-                Price = product.Price,
-                DeliveryPrice = product.DeliveryPrice
-            };
+        //public async Task<ActionResult> Update(Guid id, SaveProductDto productDto)
+        //{
+            //var orig = new Product(id.ToString())
+            //{
+            //    Name = product.Name,
+            //    Description = product.Description,
+            //    Price = product.Price,
+            //    DeliveryPrice = product.DeliveryPrice
+            //};
 
-            if (!orig.IsNew)
-                orig.Save();
-        }
+            //if (!orig.IsNew)
+            //    orig.Save();
 
-        [HttpDelete("{id}")]
-        public ActionResult Delete(Guid id)
+            // 1. parse guid id to string id
+            // 2. check if the string id exists.loop products. not exists, return BadRequest err msg
+            // 3.  declare a new product
+            // 4. assign the pass in values from productdto to product
+            // 5. return OK() and new value
+            //}
+
+            [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(Guid id)
         {
             var product = new Product(id.ToString());
             if (product.IsNew)
             {
-                return NotFound($"The product [{id}] does not exist.");
+                return NotFound($"The product with the [{id}] does not exist.");
             }
             else
             {
-                product.Delete();
-                return Ok($"The product [{id}] has been deleted.");
+                //product.Delete();
+                await _productRepository.DeleteOptions(id);
+                await _productRepository.Delete(id);
+                return Ok($"The product with the id [{id}] has been deleted.");
             }
 
         }
@@ -133,12 +162,12 @@ namespace RefactorThis.Controllers
             var product = new Product(productId.ToString());
 
             if (product.IsNew)
-                return NotFound($"The product with the product id [{id}] does not exist.");
+                return NotFound($"The product with the id [{id}] does not exist.");
 
             var productOption = new ProductOption(id);
 
             if (productOption.IsNew)
-                return NotFound($"The product option with id [{id}] does not exist.");
+                return NotFound($"The product option with the id [{id}] does not exist.");
 
             var productOptionDto = new GetProductOptionsDto();
             productOptionDto.ProductId = productOption.ProductId;
@@ -159,7 +188,7 @@ namespace RefactorThis.Controllers
             // if the product has existed by checking the productId, return with a status with an error msg.
             var product = new Product(productId.ToString());
             if (product.IsNew)
-                return NotFound("$The product with id [{productId}] does not exist.");
+                return NotFound("$The product with the id [{productId}] does not exist.");
 
             var productOption = new ProductOption();
             productOption.ProductId = productOptionsDto.ProductId;
@@ -197,14 +226,14 @@ namespace RefactorThis.Controllers
         {
             var product = new Product(productId.ToString());
             if (product.IsNew)
-                return NotFound($"The product with id [{productId}] does not exist.");
+                return NotFound($"The product with the id [{productId}] does not exist.");
 
             var productOption = new ProductOption(id);
             if (productOption.IsNew)
-                return NotFound($"The product option with id [{id}] does not exist.");
+                return NotFound($"The product option with the id [{id}] does not exist.");
 
             productOption.Delete();
-            return Ok($"The product option with id [{id}] has been deleted.");//successful
+            return Ok($"The product option with the id [{id}] has been deleted.");//successful
         }
     }
 }
