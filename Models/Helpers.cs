@@ -16,7 +16,9 @@ namespace RefactorThis.Models
 
         public static SqlConnection NewConnection()
         {
-            return new SqlConnection(ConnectionString);
+            var conn = new SqlConnection(ConnectionString);
+            conn.Open();
+            return conn;
         }
     }
 }

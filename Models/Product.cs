@@ -11,7 +11,7 @@ namespace RefactorThis.Models
     [Table("Products")]
     public class Product
     {   
-        public string Id { get; set; }
+        public Guid Id { get; set; }
 
         public string Name { get; set; }
 
@@ -47,7 +47,7 @@ namespace RefactorThis.Models
 
             IsNew = false;
 
-            Id = rdr["Id"].ToString();
+            //Id = rdr["Id"];
             Name = rdr["Name"].ToString();
             Description = (DBNull.Value == rdr["Description"]) ? null : rdr["Description"].ToString();
             Price = decimal.Parse(rdr["Price"].ToString());
@@ -70,7 +70,7 @@ namespace RefactorThis.Models
 
         public void Delete()
         {
-            foreach (var option in new ProductOptions(Guid.Parse(Id)).Items)
+            foreach (var option in new ProductOptions(Id).Items)
                 option.Delete();
 
             var conn = Helpers.NewConnection();

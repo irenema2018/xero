@@ -29,7 +29,8 @@ namespace RefactorThis.Controllers
                 foreach (var product in products) //todo don't repeat yourself
                 {
                     var productDto = new GetProductDto();
-                    productDto.Id = Guid.Parse(product.Id);
+                    //productDto.Id = Guid.Parse(product.Id);
+                    productDto.Id = product.Id;
                     productDto.Price = product.Price;
                     productDto.DeliveryPrice = product.DeliveryPrice;
                     productDto.Name = product.Name;
@@ -46,7 +47,7 @@ namespace RefactorThis.Controllers
                 foreach (var product in products)
                 {
                     var productDto = new GetProductDto();
-                    productDto.Id = Guid.Parse(product.Id);
+                    productDto.Id = product.Id;
                     productDto.Price = product.Price;
                     productDto.DeliveryPrice = product.DeliveryPrice;
                     productDto.Name = product.Name;
@@ -67,7 +68,7 @@ namespace RefactorThis.Controllers
                 return NotFound();
 
             var productDto = new GetProductDto();
-            productDto.Id = Guid.Parse(product.Id);
+            productDto.Id = product.Id;
             productDto.Price = product.Price;
             productDto.DeliveryPrice = product.DeliveryPrice;
             productDto.Name = product.Name;
@@ -121,7 +122,7 @@ namespace RefactorThis.Controllers
             // 4. assign the pass in values from productdto to product
             // 5. return OK() and new value
             var product = new Product();
-            product.Id = id.ToString();
+            product.Id = id;
             product.Price = productDto.Price;
             product.DeliveryPrice = productDto.DeliveryPrice;
             product.Name = productDto.Name;

@@ -16,6 +16,7 @@ namespace RefactorThis.Repositories
         Task Update(Product product);
         Task Delete(Guid id);
         Task DeleteOptions(Guid id); 
+
     }
 
     public class ProductRepository : IProductRepository // repository is reponsible for database opertations -- crud
@@ -24,9 +25,9 @@ namespace RefactorThis.Repositories
         {
             using (var connection = Helpers.NewConnection())
             {
-                if (string.IsNullOrWhiteSpace(product.Id))
+                if (product.Id == null || product.Id == Guid.Empty)
                 {
-                    product.Id = Guid.NewGuid().ToString();
+                    product.Id = Guid.NewGuid();
                 }
 
                 var parameters = new { product.Id, product.Name, product.Price, product.Description, product.DeliveryPrice };
@@ -44,7 +45,6 @@ namespace RefactorThis.Repositories
 
         public async Task<Product> GetById(Guid id) 
         {
-
             using (var connection = Helpers.NewConnection())
             {
                 // if the pass in id is not a Guid, return an err msg BadRequest()
@@ -53,12 +53,10 @@ namespace RefactorThis.Repositories
 
                 return result.FirstOrDefault(); 
             }
-
         }
 
         public async Task<List<Product>> GetByName(string name)
         {
-
             using (var connection = Helpers.NewConnection())
             {
                 // if the pass in id is not a Guid, return an err msg BadRequest()
@@ -68,15 +66,13 @@ namespace RefactorThis.Repositories
 
                 return result.ToList();
             }
-
         }
 
         public async Task<List<Product>> GetProducts()
         {
-
             using (var connection = Helpers.NewConnection())
             {
-                var products = await connection.QueryAsync<Product>("select id, name, description, CAST(price AS REAL) as price, CAST(deliveryprice AS REAL) as deliveryprice from products");
+                var products = await connection.QueryAsync<Product>("select Id, Name, Description, Price, DeliveryPrice from Products");
                 return products.ToList();
             }
 

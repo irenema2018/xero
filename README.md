@@ -10,11 +10,12 @@ Consider all aspects of good software engineering and show us how you'll make it
 There should be these endpoints:
 
 1. `GET /products` - gets all products. -- Done async and interface
-2. `GET /products?name={name}` - finds all products matching the specified name.
+2. `GET /products?name={name}` - finds all products matching the specified name. -- Done async and interface
 3. `GET /products/{id}` - gets the project that matches the specified ID - ID is a GUID. -- Done async and interface
 4. `POST /products` - creates a new product. -- Done async and interface
-5. `PUT /products/{id}` - updates a product.
+5. `PUT /products/{id}` - updates a product. -- Done async and interface
 6. `DELETE /products/{id}` - deletes a product and its options. -- Done async and interface
+
 7. `GET /products/{id}/options` - finds all options for a specified product.
 8. `GET /products/{id}/options/{optionId}` - finds the specified product option for the specified product. --done
 9. `POST /products/{id}/options` - adds a new product option to the specified product.
