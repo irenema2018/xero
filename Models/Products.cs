@@ -32,7 +32,7 @@ namespace RefactorThis.Models
             while (rdr.Read())
             {
                 var id = Guid.Parse(rdr.GetString(0));
-                Items.Add(new Product(id.ToString()));
+                //Items.Add(new Product(id));
             }
         }
     }

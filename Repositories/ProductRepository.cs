@@ -48,8 +48,8 @@ namespace RefactorThis.Repositories
             using (var connection = Helpers.NewConnection())
             {
                 // if the pass in id is not a Guid, return an err msg BadRequest()
-                var parameters = new { Id = id.ToString()};
-                var result = await connection.QueryAsync<Product>($"select id, name, description, CAST(price AS REAL) as price, CAST(deliveryprice AS REAL) as deliveryprice from products where id = @Id", parameters);
+                var parameters = new { id };
+                var result = await connection.QueryAsync<Product>($"select Id, Name, Description, Price, DeliveryPrice from Products where Id = @id", parameters);
 
                 return result.FirstOrDefault(); 
             }
@@ -104,8 +104,8 @@ namespace RefactorThis.Repositories
         {
             using (var connection = Helpers.NewConnection())
             {
-                var parameters = new { Id = id.ToString() };
-                await connection.ExecuteAsync($"delete from products where id = @Id",parameters);
+                var parameters = new { id };
+                await connection.ExecuteAsync($"delete from products where id = @id",parameters);
             }
         }
 
@@ -113,8 +113,8 @@ namespace RefactorThis.Repositories
         {
             using (var connection = Helpers.NewConnection())
             {
-                var parameters = new { Id = id.ToString() };
-                await connection.ExecuteAsync($"delete from productoptions where productid = @Id", parameters);
+                var parameters = new { id};
+                await connection.ExecuteAsync($"delete from productoptions where productid = @id", parameters);
             }
         }
     }
