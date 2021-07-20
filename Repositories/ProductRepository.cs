@@ -15,8 +15,9 @@ namespace RefactorThis.Repositories
         Task<List<Product>> GetByName(string Name);
         Task Update(Product product);
         Task Delete(Guid id);
-        Task DeleteOptions(Guid id); 
+        Task DeleteOptions(Guid id);
 
+        Task<List<ProductOption>> GetProductOptions(Guid productId);
     }
 
     public class ProductRepository : IProductRepository // repository is reponsible for database opertations -- crud
@@ -117,5 +118,43 @@ namespace RefactorThis.Repositories
                 await connection.ExecuteAsync($"delete from productoptions where productid = @id", parameters);
             }
         }
+
+        public async Task<List<ProductOption>> GetProductOptions(Guid productId)
+        {
+            using (var connection = Helpers.NewConnection())
+            {
+                var options = await connection.QueryAsync<ProductOption>("select Id, ProductId, Name, Description from ProductOptions");
+                return options.ToList();
+            }
+
+        }
+
+        //public ProductOptions()
+        //{
+        //    LoadProductOptions(null);
+        //}
+
+        //public ProductOptions(Guid productId)
+        //{
+        //    LoadProductOptions($"where productid = '{productId}' collate nocase");
+        //}
+
+        //private void LoadProductOptions(string where)
+        //{
+        //    Items = new List<ProductOption>();
+        //    var conn = Helpers.NewConnection();
+        //    conn.Open();
+        //    var cmd = conn.CreateCommand();
+
+        //    cmd.CommandText = $"select id from productoptions {where}";
+
+        //    var rdr = cmd.ExecuteReader();
+        //    while (rdr.Read())
+        //    {
+        //        var id = Guid.Parse(rdr.GetString(0));
+        //        Items.Add(new ProductOption(id));
+        //    }
+        //}
+
     }
 }

@@ -24,26 +24,30 @@ namespace RefactorThis.Controllers
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                var productsDto = new List<GetProductDto>(); 
+                var productsDto = new List<GetProductDto>();
+
                 var products = await _productRepository.GetProducts();
+
                 foreach (var product in products) //todo don't repeat yourself
                 {
                     var productDto = new GetProductDto();
-                    //productDto.Id = Guid.Parse(product.Id);
                     productDto.Id = product.Id;
                     productDto.Price = product.Price;
-                    productDto.DeliveryPrice =             product.DeliveryPrice;
+                    productDto.DeliveryPrice = product.DeliveryPrice;
                     productDto.Name = product.Name;
                     productDto.Description = product.Description;
 
                     productsDto.Add(productDto);
                 }
+
                 return Ok(productsDto);
             }
             else
             {
                 var productsDto = new List<GetProductDto>();
+
                 var products = await _productRepository.GetByName(name);
+
                 foreach (var product in products)
                 {
                     var productDto = new GetProductDto();
@@ -54,8 +58,9 @@ namespace RefactorThis.Controllers
                     productDto.Description = product.Description;
                     productsDto.Add(productDto);
                 }
-                    return Ok(productsDto);
-                }
+            
+                return Ok(productsDto);
+            }
         }
 
         [HttpGet("{id}")]
@@ -110,7 +115,7 @@ namespace RefactorThis.Controllers
             product.DeliveryPrice = productDto.DeliveryPrice;
             product.Name = productDto.Name;
             product.Description = productDto.Description;
-            
+
             await _productRepository.Update(product);
             return Ok($"The product with the id [{id}] has been update");
         }
@@ -132,98 +137,107 @@ namespace RefactorThis.Controllers
 
         }
 
-    //    [HttpGet("{productId}/options")]
-    //    public ProductOptions GetOptions(Guid productId)
-    //    {
-    //        return new ProductOptions(productId);
-    //    }
+        [HttpGet("{productId}/options")]
+        public async Task<ActionResult> GetOptions(Guid productId)
+        {
+            if (productId == null)
+            {
+                return NotFound($"The product with the id [{productId}] does not exist.");
+            }
+            else
+            {
 
-    //    [HttpGet("{productId}/options/{id}")]
-    //    //public ProductOption GetOption(Guid productId, Guid id)
-    //    //{
-    //    //    var option = new ProductOption(id);
-    //    //    if (option.IsNew)
-    //    //        throw new Exception();
+                var productOptions = await _productRepository.GetProductOptions(productId);
+                return Ok(productOptions);
+            }
+        }
 
-    //    //    return option;
-    //    //}
-    //    public ActionResult GetOption(Guid productId, Guid id)
-    //    {
-    //        var product = new Product(productId);
+        //    [HttpGet("{productId}/options/{id}")]
+        //    //public ProductOption GetOption(Guid productId, Guid id)
+        //    //{
+        //    //    var option = new ProductOption(id);
+        //    //    if (option.IsNew)
+        //    //        throw new Exception();
 
-    //        if (product.IsNew)
-    //            return NotFound($"The product with the id [{id}] does not exist.");
+        //    //    return option;
+        //    //}
+        //    public ActionResult GetOption(Guid productId, Guid id)
+        //    {
+        //        var product = new Product(productId);
 
-    //        var productOption = new ProductOption(id);
+        //        if (product.IsNew)
+        //            return NotFound($"The product with the id [{id}] does not exist.");
 
-    //        if (productOption.IsNew)
-    //            return NotFound($"The product option with the id [{id}] does not exist.");
+        //        var productOption = new ProductOption(id);
 
-    //        var productOptionDto = new GetProductOptionsDto();
-    //        productOptionDto.ProductId = productOption.ProductId;
-    //        productOptionDto.Name = productOption.Name;
-    //        productOptionDto.Description = productOption.Description;
-    //        return Ok(productOptionDto);//successful
-    //    }
+        //        if (productOption.IsNew)
+        //            return NotFound($"The product option with the id [{id}] does not exist.");
 
-
-    //    [HttpPost("{productId}/options")]
-    //    //public void CreateOption(Guid productId, ProductOption option)
-    //    //{
-    //    //    option.ProductId = productId;
-    //    //    option.Save();
-    //    //}
-    //    public ActionResult CreateOption(Guid productId, SaveProductOptionsDto productOptionsDto)
-    //    {
-    //        // if the product has existed by checking the productId, return with a status with an error msg.
-    //        var product = new Product(productId);
-    //        if (product.IsNew)
-    //            return NotFound("$The product with the id [{productId}] does not exist.");
-
-    //        var productOption = new ProductOption();
-    //        productOption.ProductId = productOptionsDto.ProductId;
-    //        //if (productOptionsDto.isNew)
-    //        productOption.Name = productOptionsDto.Name;
-    //        productOption.Description = productOptionsDto.Description;
-
-    //        productOption.Save();
-    //        return Ok(productOption.Id);
-
-    //    }
+        //        var productOptionDto = new GetProductOptionsDto();
+        //        productOptionDto.ProductId = productOption.ProductId;
+        //        productOptionDto.Name = productOption.Name;
+        //        productOptionDto.Description = productOption.Description;
+        //        return Ok(productOptionDto);//successful
+        //    }
 
 
+        //    [HttpPost("{productId}/options")]
+        //    //public void CreateOption(Guid productId, ProductOption option)
+        //    //{
+        //    //    option.ProductId = productId;
+        //    //    option.Save();
+        //    //}
+        //    public ActionResult CreateOption(Guid productId, SaveProductOptionsDto productOptionsDto)
+        //    {
+        //        // if the product has existed by checking the productId, return with a status with an error msg.
+        //        var product = new Product(productId);
+        //        if (product.IsNew)
+        //            return NotFound("$The product with the id [{productId}] does not exist.");
 
-    //    [HttpPut("{productId}/options/{id}")]
-    //    public void UpdateOption(Guid id, ProductOption option)
-    //    {
-    //        var orig = new ProductOption(id)
-    //        {
-    //            Name = option.Name,
-    //            Description = option.Description
-    //        };
+        //        var productOption = new ProductOption();
+        //        productOption.ProductId = productOptionsDto.ProductId;
+        //        //if (productOptionsDto.isNew)
+        //        productOption.Name = productOptionsDto.Name;
+        //        productOption.Description = productOptionsDto.Description;
 
-    //        if (!orig.IsNew)
-    //            orig.Save();
-    //    }
+        //        productOption.Save();
+        //        return Ok(productOption.Id);
 
-    //    [HttpDelete("{productId}/options/{id}")]
-    //    //public void DeleteOption(Guid id)
-    //    //{
-    //    //    var opt = new ProductOption(id);
-    //    //    opt.Delete();
-    //    //}
-    //    public ActionResult DeleteOption(Guid productId, Guid id)
-    //    {
-    //        var product = new Product(productId);
-    //        if (product.IsNew)
-    //            return NotFound($"The product with the id [{productId}] does not exist.");
+        //    }
 
-    //        var productOption = new ProductOption(id);
-    //        if (productOption.IsNew)
-    //            return NotFound($"The product option with the id [{id}] does not exist.");
 
-    //        productOption.Delete();
-    //        return Ok($"The product option with the id [{id}] has been deleted.");//successful
-    //    }
+
+        //    [HttpPut("{productId}/options/{id}")]
+        //    public void UpdateOption(Guid id, ProductOption option)
+        //    {
+        //        var orig = new ProductOption(id)
+        //        {
+        //            Name = option.Name,
+        //            Description = option.Description
+        //        };
+
+        //        if (!orig.IsNew)
+        //            orig.Save();
+        //    }
+
+        //    [HttpDelete("{productId}/options/{id}")]
+        //    //public void DeleteOption(Guid id)
+        //    //{
+        //    //    var opt = new ProductOption(id);
+        //    //    opt.Delete();
+        //    //}
+        //    public ActionResult DeleteOption(Guid productId, Guid id)
+        //    {
+        //        var product = new Product(productId);
+        //        if (product.IsNew)
+        //            return NotFound($"The product with the id [{productId}] does not exist.");
+
+        //        var productOption = new ProductOption(id);
+        //        if (productOption.IsNew)
+        //            return NotFound($"The product option with the id [{id}] does not exist.");
+
+        //        productOption.Delete();
+        //        return Ok($"The product option with the id [{id}] has been deleted.");//successful
+        //    }
     }
 }
