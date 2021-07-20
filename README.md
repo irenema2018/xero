@@ -17,8 +17,8 @@ There should be these endpoints:
 6. `DELETE /products/{id}` - deletes a product and its options. -- Done async and interface
 
 7. `GET /products/{id}/options` - finds all options for a specified product.  -- Done async and interface
-8. `GET /products/{id}/options/{optionId}` - finds the specified product option for the specified product. --done
-9. `POST /products/{id}/options` - adds a new product option to the specified product.
+8. `GET /products/{id}/options/{optionId}` - finds the specified product option for the specified product. -- Done async and interface
+9. `POST /products/{id}/options` - adds a new product option to the specified product. -- Done async and interface
 10. `PUT /products/{id}/options/{optionId}` - updates the specified product option.
 11. `DELETE /products/{id}/options/{optionId}` - deletes the specified product option. --done
 

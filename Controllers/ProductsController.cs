@@ -150,15 +150,28 @@ namespace RefactorThis.Controllers
             return Ok(productOptionDto);
         }
 
+        [HttpPost("{productId}/options")]
+        public async Task<ActionResult> PostProductOption(Guid productId, SaveProductOptionDto productOptionDto)
+        {
+            if (productOptionDto.Name.Length > 9)
+                return BadRequest($"The Name [{productOptionDto.Name}] can not be longer than 9 characters.");
+            if (productOptionDto.Description.Length > 23)
+                return BadRequest($"The Name [{productOptionDto.Description}] can not be longer than 23 characters.");
+            var productOption = new ProductOption();
+            productOption.ProductId = productId;
+            productOption.Name = productOptionDto.Name;
+            productOption.Description = productOptionDto.Description;
+            await _productRepository.AddProductOption(productId, productOption);
+            return Ok(productOption.Id);
 
-
-
-        //    [HttpPost("{productId}/options")]
+        }
         //    //public void CreateOption(Guid productId, ProductOption option)
         //    //{
         //    //    option.ProductId = productId;
         //    //    option.Save();
         //    //}
+
+
         //    public ActionResult CreateOption(Guid productId, SaveProductOptionsDto productOptionsDto)
         //    {
         //        // if the product has existed by checking the productId, return with a status with an error msg.

@@ -19,6 +19,7 @@ namespace RefactorThis.Repositories
 
         Task<List<ProductOption>> GetProductOptions(Guid productId);
         Task<ProductOption> GetProductOptionById(Guid id);
+        Task AddProductOption(Guid productId, ProductOption productOption);
     }
 
     public class ProductRepository : IProductRepository // repository is reponsible for database opertations -- crud
@@ -35,14 +36,6 @@ namespace RefactorThis.Repositories
                 var parameters = new { product.Id, product.Name, product.Price, product.Description, product.DeliveryPrice };
                 await connection.ExecuteAsync($"insert into Products (id, name, description, price, deliveryprice) values (@Id, @Name, @Description, @Price, @DeliveryPrice)", parameters);
             }
-            //var conn = Helpers.NewConnection();
-            //conn.Open();
-            //var cmd = conn.CreateCommand();
-
-            //cmd.CommandText = $"insert into Products (id, name, description, price, deliveryprice) values ('{product.Id}', '{product.Name}', '{product.Description}', {product.Price}, {product.DeliveryPrice})"; 
-
-            //conn.Open();
-            //cmd.ExecuteNonQuery();
         }
 
         public async Task<Product> GetById(Guid id) 
@@ -77,19 +70,6 @@ namespace RefactorThis.Repositories
                 var products = await connection.QueryAsync<Product>("select Id, Name, Description, Price, DeliveryPrice from Products");
                 return products.ToList();
             }
-
-            //var conn = Helpers.NewConnection();
-            //conn.Open();
-            //var cmd = conn.CreateCommand();
-
-            //cmd.CommandText = $"select id from Products {where}";
-
-            //var rdr = cmd.ExecuteReader();
-            //while (rdr.Read())
-            //{
-            //    var id = Guid.Parse(rdr.GetString(0));
-            //    products.Add(new Product(id));
-            //}
 
         }
 
@@ -140,34 +120,21 @@ namespace RefactorThis.Repositories
                 var result = await connection.QueryAsync<ProductOption>("select Id, ProductId, Name, Description from ProductOptions where Id = @id",parameters);
                 return result.FirstOrDefault();
             }
-
         }
-        //public ProductOptions()
-        //{
-        //    LoadProductOptions(null);
-        //}
+       
+        public async Task AddProductOption(Guid productId, ProductOption productOption)
+        {
+            using (var connection = Helpers.NewConnection())
+            {
+                if (productOption.Id == null || productOption.Id == Guid.Empty)
+                {
+                    productOption.Id = Guid.NewGuid();
+                }
 
-        //public ProductOptions(Guid productId)
-        //{
-        //    LoadProductOptions($"where productid = '{productId}' collate nocase");
-        //}
-
-        //private void LoadProductOptions(string where)
-        //{
-        //    Items = new List<ProductOption>();
-        //    var conn = Helpers.NewConnection();
-        //    conn.Open();
-        //    var cmd = conn.CreateCommand();
-
-        //    cmd.CommandText = $"select id from productoptions {where}";
-
-        //    var rdr = cmd.ExecuteReader();
-        //    while (rdr.Read())
-        //    {
-        //        var id = Guid.Parse(rdr.GetString(0));
-        //        Items.Add(new ProductOption(id));
-        //    }
-        //}
+                var parameters = new { productOption.Id, productOption.ProductId, productOption.Name, productOption.Description};
+                await connection.ExecuteAsync($"insert into ProductOptions (Id, ProductId, Name, Description) values (@Id, @ProductId, @Name, @Description)", parameters);
+            }
+        }
 
     }
 }
