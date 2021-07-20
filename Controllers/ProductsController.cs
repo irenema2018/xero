@@ -22,45 +22,32 @@ namespace RefactorThis.Controllers
         [HttpGet]
         public async Task<ActionResult> Get(string name)
         {
+            //var productsDto = new List<GetProductDto>();
+            var products = new List<Product>();
+
             if (string.IsNullOrWhiteSpace(name))
-            {
-                var productsDto = new List<GetProductDto>();
-
-                var products = await _productRepository.GetProducts();
-
-                foreach (var product in products) //todo don't repeat yourself
-                {
-                    var productDto = new GetProductDto();
-                    productDto.Id = product.Id;
-                    productDto.Price = product.Price;
-                    productDto.DeliveryPrice = product.DeliveryPrice;
-                    productDto.Name = product.Name;
-                    productDto.Description = product.Description;
-
-                    productsDto.Add(productDto);
-                }
-
-                return Ok(productsDto);
-            }
+                products = await _productRepository.GetProducts();
             else
+                products = await _productRepository.GetByName(name);
+
+            var productsDto = TransferToDto(products);
+            return Ok(productsDto);
+        }
+
+        private List<GetProductDto> TransferToDto(List<Product> products)
+        {
+            var productsDto = new List<GetProductDto>();
+            foreach (var product in products)
             {
-                var productsDto = new List<GetProductDto>();
-
-                var products = await _productRepository.GetByName(name);
-
-                foreach (var product in products)
-                {
-                    var productDto = new GetProductDto();
-                    productDto.Id = product.Id;
-                    productDto.Price = product.Price;
-                    productDto.DeliveryPrice = product.DeliveryPrice;
-                    productDto.Name = product.Name;
-                    productDto.Description = product.Description;
-                    productsDto.Add(productDto);
-                }
-            
-                return Ok(productsDto);
+                var productDto = new GetProductDto();
+                productDto.Id = product.Id;
+                productDto.Price = product.Price;
+                productDto.DeliveryPrice = product.DeliveryPrice;
+                productDto.Name = product.Name;
+                productDto.Description = product.Description;
+                productsDto.Add(productDto);
             }
+            return productsDto;
         }
 
         [HttpGet("{id}")]
@@ -141,12 +128,9 @@ namespace RefactorThis.Controllers
         public async Task<ActionResult> GetOptions(Guid productId)
         {
             if (productId == null)
-            {
                 return NotFound($"The product with the id [{productId}] does not exist.");
-            }
             else
             {
-
                 var productOptions = await _productRepository.GetProductOptions(productId);
                 return Ok(productOptions);
             }
