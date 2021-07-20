@@ -22,21 +22,14 @@ namespace RefactorThis.Controllers
         [HttpGet]
         public async Task<ActionResult> Get(string name)
         {
-            //var productsDto = new List<GetProductDto>();
             var products = new List<Product>();
+            var productsDto = new List<GetProductDto>();
 
             if (string.IsNullOrWhiteSpace(name))
                 products = await _productRepository.GetProducts();
             else
                 products = await _productRepository.GetByName(name);
 
-            var productsDto = TransferToDto(products);
-            return Ok(productsDto);
-        }
-
-        private List<GetProductDto> TransferToDto(List<Product> products)
-        {
-            var productsDto = new List<GetProductDto>();
             foreach (var product in products)
             {
                 var productDto = new GetProductDto();
@@ -47,7 +40,8 @@ namespace RefactorThis.Controllers
                 productDto.Description = product.Description;
                 productsDto.Add(productDto);
             }
-            return productsDto;
+
+            return Ok(productsDto);
         }
 
         [HttpGet("{id}")]
@@ -136,33 +130,27 @@ namespace RefactorThis.Controllers
             }
         }
 
-        //    [HttpGet("{productId}/options/{id}")]
-        //    //public ProductOption GetOption(Guid productId, Guid id)
-        //    //{
-        //    //    var option = new ProductOption(id);
-        //    //    if (option.IsNew)
-        //    //        throw new Exception();
+        [HttpGet("{productId}/options/{id}")]
+        public async Task<ActionResult> GetOption(Guid productId, Guid id)
+        {
+            var product = await _productRepository.GetById(productId);
+            if (product == null)
+                return NotFound($"The product with the id [{productId}] does not exist.)");
 
-        //    //    return option;
-        //    //}
-        //    public ActionResult GetOption(Guid productId, Guid id)
-        //    {
-        //        var product = new Product(productId);
+            var productOption = await _productRepository.GetProductOptionById(id);
+            if (productOption == null)
+                return NotFound($"The product option with the id [{id}] does not exist.");
 
-        //        if (product.IsNew)
-        //            return NotFound($"The product with the id [{id}] does not exist.");
+            var productOptionDto = new GetProductOptionDto();
+            productOptionDto.Id = productOption.Id;
+            productOptionDto.ProductId = productOption.ProductId;
+            productOptionDto.Name = productOption.Name;
+            productOptionDto.Description = productOption.Description;
 
-        //        var productOption = new ProductOption(id);
+            return Ok(productOptionDto);
+        }
 
-        //        if (productOption.IsNew)
-        //            return NotFound($"The product option with the id [{id}] does not exist.");
 
-        //        var productOptionDto = new GetProductOptionsDto();
-        //        productOptionDto.ProductId = productOption.ProductId;
-        //        productOptionDto.Name = productOption.Name;
-        //        productOptionDto.Description = productOption.Description;
-        //        return Ok(productOptionDto);//successful
-        //    }
 
 
         //    [HttpPost("{productId}/options")]

@@ -18,6 +18,7 @@ namespace RefactorThis.Repositories
         Task DeleteOptions(Guid id);
 
         Task<List<ProductOption>> GetProductOptions(Guid productId);
+        Task<ProductOption> GetProductOptionById(Guid id);
     }
 
     public class ProductRepository : IProductRepository // repository is reponsible for database opertations -- crud
@@ -48,7 +49,7 @@ namespace RefactorThis.Repositories
         {
             using (var connection = Helpers.NewConnection())
             {
-                // if the pass in id is not a Guid, return an err msg BadRequest()
+               
                 var parameters = new { id };
                 var result = await connection.QueryAsync<Product>($"select Id, Name, Description, Price, DeliveryPrice from Products where Id = @id", parameters);
 
@@ -123,12 +124,24 @@ namespace RefactorThis.Repositories
         {
             using (var connection = Helpers.NewConnection())
             {
-                var options = await connection.QueryAsync<ProductOption>("select Id, ProductId, Name, Description from ProductOptions");
+                var parameters = new { productId };
+                var options = await connection.QueryAsync<ProductOption>("select Id, ProductId, Name, Description from ProductOptions where productId = @productId",parameters);
                 return options.ToList();
             }
 
         }
 
+
+        public async Task<ProductOption> GetProductOptionById(Guid id)
+        {
+            using (var connection = Helpers.NewConnection())
+            {
+                var parameters = new { id };
+                var result = await connection.QueryAsync<ProductOption>("select Id, ProductId, Name, Description from ProductOptions where Id = @id",parameters);
+                return result.FirstOrDefault();
+            }
+
+        }
         //public ProductOptions()
         //{
         //    LoadProductOptions(null);

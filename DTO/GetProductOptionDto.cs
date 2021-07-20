@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 
 namespace RefactorThis.DTO
 {
-    public class GetProductOptionsDto
+    public class GetProductOptionDto
     {
+        public Guid Id { get; set; }
         public Guid ProductId { get; set; }
 
         public string Name { get; set; }
