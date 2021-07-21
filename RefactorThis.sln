@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RefactorThis", "RefactorThi
 EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "product.db", "product.db\product.db.sqlproj", "{C3555F33-E0C6-4E7E-A4ED-EF042626CD40}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RefactorThisTests", "RefactorThisTests\RefactorThisTests.csproj", "{045F8E1A-2F8B-4A72-AF3B-FE1340CC7D82}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +25,10 @@ Global
 		{C3555F33-E0C6-4E7E-A4ED-EF042626CD40}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C3555F33-E0C6-4E7E-A4ED-EF042626CD40}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C3555F33-E0C6-4E7E-A4ED-EF042626CD40}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{045F8E1A-2F8B-4A72-AF3B-FE1340CC7D82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{045F8E1A-2F8B-4A72-AF3B-FE1340CC7D82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{045F8E1A-2F8B-4A72-AF3B-FE1340CC7D82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{045F8E1A-2F8B-4A72-AF3B-FE1340CC7D82}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
