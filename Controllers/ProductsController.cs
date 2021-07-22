@@ -21,7 +21,7 @@ namespace RefactorThis.Controllers
         }//constructor. every time you use productController, a new productRepository will be created.
 
         [HttpGet]
-        public async Task<ActionResult> GetProducts(string name)
+        public async Task<ActionResult<List<GetProductDto>>> GetProducts(string name)
         {
             List<Product> products;
 
@@ -66,6 +66,10 @@ namespace RefactorThis.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateProduct(SaveProductDto productDto)
         {
+            // TODO: check length
+            //Name varchar no  17
+            //Description varchar no  35
+
             if (productDto.Price <= 0)
             {
                 return BadRequest("Thre price must be greater than $0.");
