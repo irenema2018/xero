@@ -21,6 +21,7 @@ namespace RefactorThis.Repositories
         Task<ProductOption> GetOptionById(Guid id);
         Task CreateOption(ProductOption productOption);
         Task UpdateOption(ProductOption productOption);
+        Task DeleteOption(Guid id);
     }
 
     public class ProductRepository : IProductRepository // repository is reponsible for database opertations -- crud
@@ -141,6 +142,15 @@ namespace RefactorThis.Repositories
             {
                 var parameters = new { productOption.Id, productOption.Name, productOption.Description };
                 await connection.ExecuteAsync($"update ProductOptions set Name = @Name, Description = @Description where Id = @Id", parameters);
+            }
+        }
+
+        public async Task DeleteOption(Guid id)
+        {
+            using (var connection = Helpers.NewConnection())
+            {
+                var parameters = new { id };
+                await connection.ExecuteAsync($"delete from ProductOptions where Id = @Id", parameters);
             }
         }
     }

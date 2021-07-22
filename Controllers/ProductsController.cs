@@ -196,24 +196,19 @@ namespace RefactorThis.Controllers
             return Ok($"The product option with the id [{id}] has been updated.");
         }
 
-        //    [HttpDelete("{productId}/options/{id}")]
-        //    //public void DeleteOption(Guid id)
-        //    //{
-        //    //    var opt = new ProductOption(id);
-        //    //    opt.Delete();
-        //    //}
-        //    public ActionResult DeleteOption(Guid productId, Guid id)
-        //    {
-        //        var product = new Product(productId);
-        //        if (product.IsNew)
-        //            return NotFound($"The product with the id [{productId}] does not exist.");
+        [HttpDelete("{productId}/options/{id}")]
+        public async Task<ActionResult> DeleteOption(Guid productId, Guid id)
+        {
+            var product = await _productRepository.GetProductById(productId);
+            if (product == null)
+                return NotFound($"The product with the id [{productId}] does not exist.)");
 
-        //        var productOption = new ProductOption(id);
-        //        if (productOption.IsNew)
-        //            return NotFound($"The product option with the id [{id}] does not exist.");
+            var productOption = await _productRepository.GetOptionById(id);
+            if (productOption == null)
+                return NotFound($"The product option with the id [{id}] does not exist.");
 
-        //        productOption.Delete();
-        //        return Ok($"The product option with the id [{id}] has been deleted.");//successful
-        //    }
+            await _productRepository.DeleteOption(id);
+            return Ok($"The product option with the id [{id}] has been deleted.");
+        }
     }
 }
