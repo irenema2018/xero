@@ -19,7 +19,7 @@ namespace RefactorThis.Tests.Controllers
             throw new NotImplementedException();
         }
 
-        public Task CreateProduct(Product product)
+        public Task<Guid> CreateProduct(Product product)
         {
             throw new NotImplementedException();
         }
@@ -69,9 +69,36 @@ namespace RefactorThis.Tests.Controllers
             return product;
         }
 
-        public Task<List<Product>> GetProducts()
+        public async Task<List<Product>> GetProducts()
         {
-            throw new NotImplementedException();
+            var products = new List<Product>();
+            var product = new Product();
+            product.Id = new Guid("33333333-3333-3333-3333-333333331111");
+            product.Name = "Sumsung";
+            product.Description = "First Product Desc";
+            product.Price = decimal.Parse("100.50");
+            product.DeliveryPrice = decimal.Parse("19.95");
+
+            products.Add(product);
+
+            var product2 = new Product();
+            product2.Id = new Guid("44444444-4444-4444-4444-444444442222");
+            product2.Name = "Apple";
+            product2.Description = "Second Product Desc";
+            product2.Price = decimal.Parse("266.50");
+            product2.DeliveryPrice = decimal.Parse("13.65");
+
+            products.Add(product2);
+
+            var product3 = new Product();
+            product3.Id = new Guid("44444444-4444-4444-4444-444444443333");
+            product3.Name = "OnePlus";
+            product3.Description = "Third Product Desc";
+            product3.Price = decimal.Parse("366.50");
+            product3.DeliveryPrice = decimal.Parse("14.65");
+
+            products.Add(product2);
+            return products;
         }
 
         public async Task<List<Product>> GetProductsByName(string name)
@@ -110,91 +137,174 @@ namespace RefactorThis.Tests.Controllers
 
     public class ProductsControllerTests
     {
-        //[Fact] // label for an unit test case
-        //public async Task GetProduct_ReturnsAProduct()
+        [Fact]
+        public async Task GetProducts_ReturnsOk_WhenNamePassedIn()
+        {
+            var productRepositoryMock = new Mock<IProductRepository>();
+            var product1 = new Product();
+
+            var sut = new ProductsController(productRepositoryMock.Object);
+            var result = await sut.GetProducts("Name");
+        }
+
+        [Fact] // label for an unit test case
+        public async Task GetProduct_ReturnsAProduct()
+        {
+           
+           //Assemble 
+            var productRepositoryMock = new Mock<IProductRepository>();
+            var product = new Product()
+            {
+                Id = new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC")
+            };
+            productRepositoryMock.Setup(p => p.GetProductById(new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC"))).ReturnsAsync(product);
+            
+            //Act
+            // subject under testing
+            var sut = new ProductsController(productRepositoryMock.Object);
+            // return type <ActionResult<GetProductDto>>
+            var result = await sut.GetProduct(new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC"));
+            
+            //Assert
+            Assert.IsType<ActionResult<GetProductDto>>(result);
+
+            var actionResult = Assert.IsType<OkObjectResult>(result.Result); //Result is a class member
+            var getProductDto = Assert.IsType<GetProductDto>(actionResult.Value);
+            Assert.Equal(new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC"), getProductDto.Id);
+
+            //Assert.Equal(productExeResult.Result.DeliveryPrice, getProductDto.DeliveryPrice);
+            //Assert.Equal(productExeResult.Result.Description, getProductDto.Description);
+            //Assert.Equal(productExeResult.Result.Name, getProductDto.Name);
+            //Assert.Equal(productExeResult.Result.Price, getProductDto.Price);
+        }
+
+        [Fact]
+        public async Task CreateProduct_ReturnsOKAndProductId()
+        {
+            var productRepositoryMock = new Mock<IProductRepository>();
+            productRepositoryMock.Setup(p => p.CreateProduct(It.IsAny<Product>())).ReturnsAsync(new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC"));
+
+            var sut = new ProductsController(productRepositoryMock.Object);
+            var productDto = new SaveProductDto();
+            productDto.Name = "One Plus";
+            productDto.Description = "New looking";
+            productDto.Price = 100.50M;
+            productDto.DeliveryPrice  = 10.95M;
+            var result = await sut.CreateProduct(productDto);
+
+            Assert.IsType<ActionResult<Guid>>(result);
+            var actionResult = Assert.IsType<OkObjectResult>(result.Result); 
+            var id = Assert.IsType<Guid>(actionResult.Value);
+            Assert.Equal(new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC"), id);
+          
+            //Assert.Equal(productExeResult.Result.DeliveryPrice, getProductDto.DeliveryPrice);
+            //Assert.Equal(productExeResult.Result.Description, getProductDto.Description);
+            //Assert.Equal(productExeResult.Result.Name, getProductDto.Name);
+            //Assert.Equal(productExeResult.Result.Price, getProductDto.Price);
+
+        }
+
+        [Fact]
+        public async Task CreateProduct_ReturnsBadRequest_WhenPriceIsZero()
+        {
+            var productRepositoryMock = new Mock<IProductRepository>();
+            var sut = new ProductsController(productRepositoryMock.Object);
+
+            var productDto = new SaveProductDto();
+            productDto.Name = "One Plus";
+            productDto.Description = "New looking";
+            productDto.Price = 0M;
+            productDto.DeliveryPrice = 10.95M;
+            var result = await sut.CreateProduct(productDto);
+
+            Assert.IsType<ActionResult<Guid>>(result);
+            var actionResult = Assert.IsType<BadRequestObjectResult>(result.Result); // test if the result is ok
+            var errorMsg = Assert.IsType<string>(actionResult.Value);
+            Assert.Equal("The price must be greater than $0.", errorMsg);
+
+
+            //Assert.Equal(productExeResult.Result.DeliveryPrice, getProductDto.DeliveryPrice);
+            //Assert.Equal(productExeResult.Result.Description, getProductDto.Description);
+            //Assert.Equal(productExeResult.Result.Name, getProductDto.Name);
+            //Assert.Equal(productExeResult.Result.Price, getProductDto.Price);
+
+        }
+
+        //[Fact]
+        //public async Task GetProducts_ReturnsOk_WhenNameIsPassedIn()
         //{
-        //    //var productRepository = new FakeRepository();
-        //    // subject under testing
-        //    var productRepositoryMock = new Mock<IProductRepository>();
-        //    var product = new Product()
-        //    {
-        //        Id = new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC")
-        //    };
-        //    productRepositoryMock.Setup(p => p.GetProductById(new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC"))).ReturnsAsync(product);
-        //    var sut = new ProductsController(productRepositoryMock.Object);
-        //    var result = await sut.GetProduct(new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC"));
-        //    Assert.NotNull(result);
-        //    Assert.IsType<ActionResult<GetProductDto>>(result);
+        //    // Assemble
+        //    var sut = new ProductsController(new FakeRepository());
 
-        //    var actionResult = Assert.IsType<OkObjectResult>(result.Result); //Result is a class member
-        //    var getProductDto = Assert.IsType<GetProductDto>(actionResult.Value);
-        //    Assert.Equal(new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC"), getProductDto.Id);
+        //    // Act
 
-        //    //Assert.Equal(productExeResult.Result.DeliveryPrice, getProductDto.DeliveryPrice);
-        //    //Assert.Equal(productExeResult.Result.Description, getProductDto.Description);
-        //    //Assert.Equal(productExeResult.Result.Name, getProductDto.Name);
-        //    //Assert.Equal(productExeResult.Result.Price, getProductDto.Price);
+        //    var taskResult = await sut.GetProducts("Sumsung"); // Task<ActionResult<GetProductDto>>
+
+        //    // Assert 
+        //    Assert.NotNull(taskResult);
+        //    var actionResult = Assert.IsType<OkObjectResult>(taskResult.Result);
+
+        //    Assert.NotNull(actionResult.Value);
+        //    var dtoList = Assert.IsType<List<GetProductDto>>(actionResult.Value);
+
+        //    Assert.Equal(2, dtoList.Count);
         //}
 
-        [Fact]
-        public async Task GetProducts_ReturnsOk_WhenNameIsPassedIn()
-        {
-            // Assemble
-            var sut = new ProductsController(new FakeRepository());
+        //[Fact]
+        //public async Task GetProducts_ReturnsOk_WhenNoNamePassedIn()
+        //{
+        //    // Assemble
+        //    var sut = new ProductsController(new FakeRepository());
 
-            // Act
-           
-            var taskResult = await sut.GetProducts("Sumsung"); // Task<ActionResult<GetProductDto>>
+        //    // Act
 
-            // Assert 
-            Assert.NotNull(taskResult);
-            var actionResult = Assert.IsType<OkObjectResult>(taskResult.Result);
+        //    var taskResult = await sut.GetProducts(" "); // Task<ActionResult<GetProductDto>>
 
-            Assert.NotNull(actionResult.Value);
-            var dtoList = Assert.IsType<List<GetProductDto>>(actionResult.Value);
-                      
-            Assert.Equal(2, dtoList.Count);
-            //Assert.Equal("Good Product Name", dto.Name);
-            //Assert.Equal("Good Product Desc", dto.Description);
-            //Assert.Equal(decimal.Parse("100.50"), dto.Price);
-            //Assert.Equal(decimal.Parse("19.95"), dto.DeliveryPrice);
-        }
+        //    // Assert 
+        //    Assert.NotNull(taskResult);
+        //    var actionResult = Assert.IsType<OkObjectResult>(taskResult.Result);
 
-        [Fact]
-        public async Task GetProduct_ReturnsOk()
-        {
-            // Assemble
-            var sut = new ProductsController(new FakeRepository());
+        //    Assert.NotNull(actionResult.Value);
+        //    var dtoList = Assert.IsType<List<GetProductDto>>(actionResult.Value);
 
-            // Act
-            var id = new Guid("11111111-1111-1111-1111-111111111111");
-            var taskResult = await sut.GetProduct(id); // Task<ActionResult<GetProductDto>>
+        //    Assert.Equal(3, dtoList.Count);
+        //}
 
-            // Assert 
-            Assert.NotNull(taskResult);
-            var actionResult = Assert.IsType<OkObjectResult>(taskResult.Result);
+        //[Fact]
+        //public async Task GetProduct_ReturnsOk()
+        //{
+        //    // Assemble
+        //    var sut = new ProductsController(new FakeRepository());
 
-            Assert.NotNull(actionResult.Value);
-            var dto = Assert.IsType<GetProductDto>(actionResult.Value);
+        //    // Act
+        //    var id = new Guid("11111111-1111-1111-1111-111111111111");
+        //    var taskResult = await sut.GetProduct(id); // Task<ActionResult<GetProductDto>>
 
-            Assert.Equal(id, dto.Id);
-            Assert.Equal("Good Product Name", dto.Name);
-            Assert.Equal("Good Product Desc", dto.Description);
-            Assert.Equal(decimal.Parse("100.50"), dto.Price);
-            Assert.Equal(decimal.Parse("19.95"), dto.DeliveryPrice);
-        }
+        //    // Assert 
+        //    Assert.NotNull(taskResult);
+        //    var actionResult = Assert.IsType<OkObjectResult>(taskResult.Result);
 
-        [Fact]
-        public async Task GetProduct_ReturnsNotFound_WhenProductIdDoesNotExist()
-        {
-            var sut = new ProductsController(new FakeRepository());
+        //    Assert.NotNull(actionResult.Value);
+        //    var dto = Assert.IsType<GetProductDto>(actionResult.Value);
 
-            var id = new Guid("22222222-2222-2222-2222-222222222222");
-            var taskResult = await sut.GetProduct(id); // Task<ActionResult<GetProductDto>>
+        //    Assert.Equal(id, dto.Id);
+        //    Assert.Equal("Good Product Name", dto.Name);
+        //    Assert.Equal("Good Product Desc", dto.Description);
+        //    Assert.Equal(decimal.Parse("100.50"), dto.Price);
+        //    Assert.Equal(decimal.Parse("19.95"), dto.DeliveryPrice);
+        //}
 
-            Assert.NotNull(taskResult);
-            Assert.IsType<NotFoundObjectResult>(taskResult.Result);
-        }
+        //[Fact]
+        //public async Task GetProduct_ReturnsNotFound_WhenProductIdDoesNotExist()
+        //{
+        //    var sut = new ProductsController(new FakeRepository());
+
+        //    var id = new Guid("22222222-2222-2222-2222-222222222222");
+        //    var taskResult = await sut.GetProduct(id); // Task<ActionResult<GetProductDto>>
+
+        //    Assert.NotNull(taskResult);
+        //    Assert.IsType<NotFoundObjectResult>(taskResult.Result);
+        //}
     }
 }
 

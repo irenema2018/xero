@@ -9,7 +9,7 @@ namespace RefactorThis.Repositories
 {
     public interface IProductRepository
     {
-        Task CreateProduct(Product product);
+        Task<Guid> CreateProduct(Product product);
         Task<List<Product>> GetProducts();
         Task<Product> GetProductById(Guid id);
         Task<List<Product>> GetProductsByName(string Name);
@@ -24,19 +24,21 @@ namespace RefactorThis.Repositories
         Task DeleteOption(Guid id);
     }
 
-    public class ProductRepository : IProductRepository // repository is reponsible for database opertations -- crud
+    public class ProductRepository : IProductRepository 
     {
-        public async Task CreateProduct(Product product)
+        public async Task<Guid> CreateProduct(Product product)
         {
+            var productId = Guid.NewGuid();
             using (var connection = Helpers.NewConnection())
             {
-                if (product.Id == null || product.Id == Guid.Empty)
+                if (product.Id != null && product.Id != Guid.Empty)
                 {
-                    product.Id = Guid.NewGuid();
+                     productId = product.Id;
                 }
 
-                var parameters = new { product.Id, product.Name, product.Price, product.Description, product.DeliveryPrice };
+                var parameters = new { Id=productId, product.Name, product.Price, product.Description, product.DeliveryPrice };//without product, C# can still recognize Name/Price, etc.
                 await connection.ExecuteAsync($"insert into Products (id, name, description, price, deliveryprice) values (@Id, @Name, @Description, @Price, @DeliveryPrice)", parameters);
+                return productId;
             }
         }
 

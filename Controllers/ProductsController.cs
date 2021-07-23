@@ -17,7 +17,6 @@ namespace RefactorThis.Controllers
         public ProductsController(IProductRepository productRepository)
         {
             _productRepository = productRepository;
-
         }//constructor. every time you use productController, a new productRepository will be created.
 
         [HttpGet]
@@ -34,7 +33,7 @@ namespace RefactorThis.Controllers
 
             foreach (var product in products)
             {
-                productsDto.Add(CopyProductToDto(product));
+                productsDto.Add(MapProductToDto(product));
             }
             
             return Ok(productsDto);
@@ -47,11 +46,11 @@ namespace RefactorThis.Controllers
             if (product == null)
                 return NotFound($"The product with the id [{id}] does not exist.");
 
-            return Ok(CopyProductToDto(product));
+            return Ok(MapProductToDto(product));
         }
 
         //The below function is for getting a product dto.
-        private GetProductDto CopyProductToDto(Product product)
+        private GetProductDto MapProductToDto(Product product)
         {
             var productDto = new GetProductDto();
             productDto.Id            = product.Id;
@@ -64,21 +63,19 @@ namespace RefactorThis.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> CreateProduct(SaveProductDto productDto)
+        public async Task<ActionResult<Guid>> CreateProduct(SaveProductDto productDto)
         {
-            // TODO: check length
-            //Name varchar no  17
-            //Description varchar no  35
+            if (productDto.Name.Length > 17)
+                return BadRequest($"Name [{productDto.Name}] can not be longer than 17 characters.");
+
+            if (productDto.Description.Length > 35)
+                return BadRequest($"Description [{productDto.Description}] can not be longer than 23 characters.");
 
             if (productDto.Price <= 0)
-            {
-                return BadRequest("Thre price must be greater than $0.");
-            }
+                return BadRequest("The price must be greater than $0.");
 
             if (productDto.DeliveryPrice < 0)
-            {
                 return BadRequest("The delivery price must be greater than or equal to $0");
-            }
 
             var product = new Product();
             product.Price = productDto.Price;
@@ -86,9 +83,9 @@ namespace RefactorThis.Controllers
             product.Name = productDto.Name;
             product.Description = productDto.Description;
 
-            await _productRepository.CreateProduct(product);
+            var productId = await _productRepository.CreateProduct(product);
 
-            return Ok(product.Id);
+            return Ok(productId);
         }
 
         [HttpPut("{id}")]
@@ -120,14 +117,21 @@ namespace RefactorThis.Controllers
         }
 
         [HttpGet("{productId}/options")]
-        public async Task<ActionResult> GetOptions(Guid productId)
+        public async Task<ActionResult<List<GetProductOptionDto>>> GetOptions(Guid productId)
         {
             var product = await _productRepository.GetProductById(productId);
             if (product == null)
                 return NotFound($"The product with the id [{productId}] does not exist.");
-            
-            var productOptions = await _productRepository.GetOptions(productId);
-            // TODO: where is DTO?
+
+            var productOptions = await _productRepository.GetOptions(productId); //return a list
+            foreach (var productOption in productOptions)
+                {
+                    var productOptionDto = new GetProductOptionDto();
+                    productOptionDto.Id = productOption.Id;
+                    productOptionDto.ProductId = productOption.ProductId;
+                    productOptionDto.Name = productOption.Name;
+                    productOptionDto.Description = productOption.Description;
+                }
 
             return Ok(productOptions); // Unit Test: Make sure no function can return the original data model.
         }
