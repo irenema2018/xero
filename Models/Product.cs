@@ -21,7 +21,7 @@ namespace RefactorThis.Models
 
         public decimal DeliveryPrice { get; set; }
 
-        [NotMapped]// Excludes the property from all operations. infor from Dapper
+        [NotMapped]// Excludes the property from all operations. Info from Dapper
         [JsonIgnore]
         public bool IsNew { get; }
 

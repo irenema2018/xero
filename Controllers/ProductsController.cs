@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using RefactorThis.DTO;
 using RefactorThis.Models;
 using RefactorThis.Repositories;
+using Serilog;
 
 namespace RefactorThis.Controllers
 {
@@ -13,10 +14,12 @@ namespace RefactorThis.Controllers
     public class ProductsController : ControllerBase
     {
         IProductRepository _productRepository;
+        ILogger _logger;
 
-        public ProductsController(IProductRepository productRepository)
+        public ProductsController(IProductRepository productRepository, ILogger logger)
         {
             _productRepository = productRepository;
+            _logger = logger;
         }//constructor. every time you use productController, a new productRepository will be created.
 
         [HttpGet]
@@ -24,26 +27,37 @@ namespace RefactorThis.Controllers
         {
             List<Product> products;
 
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                products = await _productRepository.GetProducts();
-            }
-            else
-            {
-                products = await _productRepository.GetProductsByName(name);
-            }
-
-            var productsDto = new List<GetProductDto>();
-
-            if (products != null)
-            {
-                foreach (var product in products)
+            try 
+            { 
+                if (string.IsNullOrWhiteSpace(name))
                 {
-                    productsDto.Add(MapProductToDto(product));
+                    _logger.Information("GetProducts is called without name.");
+                    products = await _productRepository.GetProducts();
                 }
+                else
+                {
+                    _logger.Information($"GetProducts is called with {name}.");
+                    products = await _productRepository.GetProductsByName(name);
+                }
+
+                var productsDto = new List<GetProductDto>();
+
+                if (products != null)
+                {
+                    foreach (var product in products)
+                    {
+                        productsDto.Add(MapProductToDto(product));
+                    }
+                }
+
+                return Ok(productsDto);
+            }
+            catch(Exception e)
+            { 
+                _logger.Error("Error has occured.", e);
+                return StatusCode(500);
             }
 
-            return Ok(productsDto);
         }
 
         [HttpGet("{id}")]
@@ -153,22 +167,30 @@ namespace RefactorThis.Controllers
         [HttpGet("{productId}/options")]
         public async Task<ActionResult<List<GetProductOptionDto>>> GetOptions(Guid productId)
         {
+
             var product = await _productRepository.GetProductById(productId);
             if (product == null)
                 return NotFound($"The product with the id [{productId}] does not exist.");
 
-            var productOptions = await _productRepository.GetOptions(productId); //return a list
-            foreach (var productOption in productOptions)
+            var productOptionsDto = new List<GetProductOptionDto>();
+            var productOptions = await _productRepository.GetOptions(productId);
+            if (productOptions != null)
             {
-                var productOptionDto = new GetProductOptionDto();
-                productOptionDto.Id = productOption.Id;
-                productOptionDto.ProductId = productOption.ProductId;
-                productOptionDto.Name = productOption.Name;
-                productOptionDto.Description = productOption.Description;
+                foreach (ProductOption productOption in productOptions)
+                {
+                    var productOptionDto = new GetProductOptionDto();
+                    productOptionDto.Id = productOption.Id;
+                    productOptionDto.ProductId = productOption.ProductId;
+                    productOptionDto.Name = productOption.Name;
+                    productOptionDto.Description = productOption.Description;
+                    productOptionsDto.Add(productOptionDto);
+                }
             }
 
-            return Ok(productOptions); // Unit Test: Make sure no function can return the original data model.
+            return Ok(productOptionsDto); 
         }
+
+
 
         //Get a specific product option
         [HttpGet("{productId}/options/{id}")]

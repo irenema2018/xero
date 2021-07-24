@@ -12,6 +12,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RefactorThis.Repositories;
+using Serilog;
+using ILogger = Serilog.ILogger;
 
 namespace RefactorThis
 {
@@ -31,6 +33,13 @@ namespace RefactorThis
             services.AddMvc(options => options.EnableEndpointRouting = false);
             services.AddScoped(typeof(IProductRepository), typeof(ProductRepository));
             services.AddSwaggerGen();
+            services.AddSingleton(
+                (ILogger)new LoggerConfiguration()
+                .ReadFrom.Configuration(Configuration)
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .CreateLogger()
+                );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
