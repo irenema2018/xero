@@ -12,7 +12,7 @@ namespace RefactorThis.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        IProductRepository _productRepository; //declare (ProductRepository productRepository)class member at first, have changed to interfece.
+        IProductRepository _productRepository;
 
         public ProductsController(IProductRepository productRepository)
         {
@@ -25,17 +25,24 @@ namespace RefactorThis.Controllers
             List<Product> products;
 
             if (string.IsNullOrWhiteSpace(name))
+            {
                 products = await _productRepository.GetProducts();
+            }
             else
+            {
                 products = await _productRepository.GetProductsByName(name);
+            }
 
             var productsDto = new List<GetProductDto>();
 
-            foreach (var product in products)
+            if (products != null)
             {
-                productsDto.Add(MapProductToDto(product));
+                foreach (var product in products)
+                {
+                    productsDto.Add(MapProductToDto(product));
+                }
             }
-            
+
             return Ok(productsDto);
         }
 
@@ -53,11 +60,11 @@ namespace RefactorThis.Controllers
         private GetProductDto MapProductToDto(Product product)
         {
             var productDto = new GetProductDto();
-            productDto.Id            = product.Id;
-            productDto.Price         = product.Price;
+            productDto.Id = product.Id;
+            productDto.Price = product.Price;
             productDto.DeliveryPrice = product.DeliveryPrice;
-            productDto.Name          = product.Name;
-            productDto.Description   = product.Description;
+            productDto.Name = product.Name;
+            productDto.Description = product.Description;
 
             return productDto;
         }
@@ -66,16 +73,24 @@ namespace RefactorThis.Controllers
         public async Task<ActionResult<Guid>> CreateProduct(SaveProductDto productDto)
         {
             if (productDto.Name.Length > 17)
+            {
                 return BadRequest($"Name [{productDto.Name}] can not be longer than 17 characters.");
+            }
 
             if (productDto.Description.Length > 35)
+            {
                 return BadRequest($"Description [{productDto.Description}] can not be longer than 23 characters.");
+            }
 
             if (productDto.Price <= 0)
+            {
                 return BadRequest("The price must be greater than $0.");
+            }
 
             if (productDto.DeliveryPrice < 0)
+            {
                 return BadRequest("The delivery price must be greater than or equal to $0");
+            }
 
             var product = new Product();
             product.Price = productDto.Price;
@@ -89,8 +104,28 @@ namespace RefactorThis.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateProduct(Guid id, SaveProductDto productDto)
+        public async Task<ActionResult<string>> UpdateProduct(Guid id, SaveProductDto productDto)
         {
+            if (productDto.Name.Length > 17)
+            {
+                return BadRequest($"Name [{productDto.Name}] can not be longer than 17 characters.");
+            }
+
+            if (productDto.Description.Length > 35)
+            {
+                return BadRequest($"Description [{productDto.Description}] can not be longer than 23 characters.");
+            }
+
+            if (productDto.Price <= 0)
+            {
+                return BadRequest("The price must be greater than $0.");
+            }
+
+            if (productDto.DeliveryPrice < 0)
+            {
+                return BadRequest("The delivery price must be greater than or equal to $0");
+            }
+
             var product = new Product();
             product.Id = id;
             product.Price = productDto.Price;
@@ -99,12 +134,11 @@ namespace RefactorThis.Controllers
             product.Description = productDto.Description;
 
             await _productRepository.UpdateProduct(product);
-
             return Ok($"The product with the id [{id}] has been updated.");
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteProduct(Guid id)
+        public async Task<ActionResult<string>> DeleteProduct(Guid id)
         {
             var product = await _productRepository.GetProductById(id);
             if (product == null)
@@ -125,13 +159,13 @@ namespace RefactorThis.Controllers
 
             var productOptions = await _productRepository.GetOptions(productId); //return a list
             foreach (var productOption in productOptions)
-                {
-                    var productOptionDto = new GetProductOptionDto();
-                    productOptionDto.Id = productOption.Id;
-                    productOptionDto.ProductId = productOption.ProductId;
-                    productOptionDto.Name = productOption.Name;
-                    productOptionDto.Description = productOption.Description;
-                }
+            {
+                var productOptionDto = new GetProductOptionDto();
+                productOptionDto.Id = productOption.Id;
+                productOptionDto.ProductId = productOption.ProductId;
+                productOptionDto.Name = productOption.Name;
+                productOptionDto.Description = productOption.Description;
+            }
 
             return Ok(productOptions); // Unit Test: Make sure no function can return the original data model.
         }
@@ -149,11 +183,11 @@ namespace RefactorThis.Controllers
                 return NotFound($"The product option with the id [{id}] does not exist.");
 
             var productOptionDto = new GetProductOptionDto();
-            productOptionDto.Id          = productOption.Id;
-            productOptionDto.ProductId   = productOption.ProductId;
-            productOptionDto.Name        = productOption.Name;
+            productOptionDto.Id = productOption.Id;
+            productOptionDto.ProductId = productOption.ProductId;
+            productOptionDto.Name = productOption.Name;
             productOptionDto.Description = productOption.Description;
-            
+
             return Ok(productOptionDto);
         }
 
@@ -167,12 +201,12 @@ namespace RefactorThis.Controllers
                 return BadRequest($"Description [{productOptionDto.Description}] can not be longer than 23 characters.");
 
             var productOption = new ProductOption();
-            productOption.ProductId     = productId;
-            productOption.Name          = productOptionDto.Name;
-            productOption.Description   = productOptionDto.Description;
-            
+            productOption.ProductId = productId;
+            productOption.Name = productOptionDto.Name;
+            productOption.Description = productOptionDto.Description;
+
             await _productRepository.CreateOption(productOption);
-            
+
             return Ok(productOption.Id);
         }
 
@@ -189,7 +223,7 @@ namespace RefactorThis.Controllers
 
             if (productId != productOption.ProductId)
                 return BadRequest($"The product option does not belong to the product.");
-         
+
             if (productOptionDto.Name.Length > 9)
                 return BadRequest($"Name [{productOptionDto.Name}] can not be longer than 9 characters.");
 

@@ -9,10 +9,10 @@ namespace RefactorThis.Repositories
 {
     public interface IProductRepository
     {
-        Task<Guid> CreateProduct(Product product);
         Task<List<Product>> GetProducts();
-        Task<Product> GetProductById(Guid id);
         Task<List<Product>> GetProductsByName(string Name);
+        Task<Product> GetProductById(Guid id);
+        Task<Guid> CreateProduct(Product product);
         Task UpdateProduct(Product product);
         Task DeleteProduct(Guid id);
         Task DeleteOptions(Guid productId);
@@ -26,19 +26,25 @@ namespace RefactorThis.Repositories
 
     public class ProductRepository : IProductRepository 
     {
-        public async Task<Guid> CreateProduct(Product product)
+        public async Task<List<Product>> GetProducts()
         {
-            var productId = Guid.NewGuid();
             using (var connection = Helpers.NewConnection())
             {
-                if (product.Id != null && product.Id != Guid.Empty)
-                {
-                     productId = product.Id;
-                }
+                var products = await connection.QueryAsync<Product>("select Id, Name, Description, Price, DeliveryPrice from Products");
 
-                var parameters = new { Id=productId, product.Name, product.Price, product.Description, product.DeliveryPrice };//without product, C# can still recognize Name/Price, etc.
-                await connection.ExecuteAsync($"insert into Products (id, name, description, price, deliveryprice) values (@Id, @Name, @Description, @Price, @DeliveryPrice)", parameters);
-                return productId;
+                return products.ToList();
+            }
+        }
+        public async Task<List<Product>> GetProductsByName(string name)
+        {
+            using (var connection = Helpers.NewConnection())
+            {
+                // if the pass in id is not a Guid, return an err msg BadRequest()
+                name = "%" + name + "%";
+                var parameters = new { name };
+                var result = await connection.QueryAsync<Product>($"select Id, Name, Description, Price, DeliveryPrice from Products where Name like @name", parameters);
+
+                return result.ToList();
             }
         }
 
@@ -54,29 +60,22 @@ namespace RefactorThis.Repositories
             }
         }
 
-        public async Task<List<Product>> GetProductsByName(string name)
+        public async Task<Guid> CreateProduct(Product product)
         {
+            var productId = Guid.NewGuid();
             using (var connection = Helpers.NewConnection())
             {
-                // if the pass in id is not a Guid, return an err msg BadRequest()
-                name = "%" + name + "%";
-                var parameters = new { name };
-                var result = await connection.QueryAsync<Product>($"select Id, Name, Description, Price, DeliveryPrice from Products where Name like @name", parameters);
+                if (product.Id != null && product.Id != Guid.Empty)
+                {
+                     productId = product.Id;
+                }
 
-                return result.ToList();
+                var parameters = new { Id=productId, product.Name, product.Price, product.Description, product.DeliveryPrice };//without product, C# can still recognize Name/Price, etc.
+                await connection.ExecuteAsync($"insert into Products (id, name, description, price, deliveryprice) values (@Id, @Name, @Description, @Price, @DeliveryPrice)", parameters);
+                return productId;
             }
         }
-
-        public async Task<List<Product>> GetProducts()
-        {
-            using (var connection = Helpers.NewConnection())
-            {
-                var products = await connection.QueryAsync<Product>("select Id, Name, Description, Price, DeliveryPrice from Products");
-
-                return products.ToList();
-            }
-        }
-
+        
         public async Task UpdateProduct(Product product)
         {
             using (var connection = Helpers.NewConnection())
