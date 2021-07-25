@@ -1,17 +1,45 @@
-# refactor-this
-The attached project is a poorly written products API in C#.
+## Development Environment
+- I used Visual Studio 2019 Professional as the development platform for this project.
+- I upgraded the .net core version to 3.1.
+- Fixed all the issues in .net core 3.1 by downloading nuget packages.
+- Once the project is building and running successfully, I started making changes.
 
-Please evaluate and refactor areas where you think can be improved. 
+## Database
+- I am more familiar with SQL Server so changed SQLite to SQL Server.
+- I have changed the id columns to uniqueidentifier.
+- I have added primary keys and foreign keys.
 
-Consider all aspects of good software engineering and show us how you'll make it #beautiful and make it a production ready code.
+## ORM (Object Relational Mapping)
+- I have used Dapper for ORM.
 
-## Getting started for applicants
+## Repository
+- I have used a repository class to handle all the database activities.
 
-There should be these endpoints:
+## DTO (Data Transfer Object)
+- I have used DTO objects to transfer data back and forth.
+
+## Logging
+- I have used Serilog for logging.
+
+## Testing
+- For manual testing, I used Postman.
+- For writing unit tests, I used XUnit and Moq.
+
+## API Documentation
+- I have used Swagger for documenting the API endpoints.
+
+## Further improvements
+- If I have more time, I would like to use stored procedures for the SQL code.
+- Add logging in the database.
+
+## Running the application
+Server: `> dotnet run`
+
+Endpoints:
 
 1. `GET /products` - gets all products. 
 2. `GET /products?name={name}` - finds all products matching the specified name. 
-3. `GET /products/{id}` - gets the project that matches the specified ID - ID is a GUID. 
+3. `GET /products/{id}` - gets the project that matches the specified ID. 
 4. `POST /products` - creates a new product.
 5. `PUT /products/{id}` - updates a product.
 6. `DELETE /products/{id}` - deletes a product and its options. 
@@ -21,8 +49,6 @@ There should be these endpoints:
 9. `POST /products/{id}/options` - adds a new product option to the specified product. 
 10. `PUT /products/{id}/options/{optionId}` - updates the specified product option.
 11. `DELETE /products/{id}/options/{optionId}` - deletes the specified product option. 
-
-All models are specified in the `/Models` folder, but should conform to:
 
 **Product:**
 ```
