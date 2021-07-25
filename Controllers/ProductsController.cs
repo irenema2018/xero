@@ -276,7 +276,7 @@ namespace RefactorThis.Controllers
         }
 
         [HttpPost("{productId}/options")]
-        public async Task<ActionResult> CreateOption(Guid productId, SaveProductOptionDto productOptionDto)
+        public async Task<ActionResult<Guid>> CreateOption(Guid productId, SaveProductOptionDto productOptionDto)
         {
             try
             {
@@ -296,9 +296,9 @@ namespace RefactorThis.Controllers
                 productOption.Name = productOptionDto.Name;
                 productOption.Description = productOptionDto.Description;
 
-                await _productRepository.CreateOption(productOption);
+                var id = await _productRepository.CreateOption(productOption);
 
-                return Ok(productOption.Id);
+                return Ok(id);
             }
             catch (Exception e)
             {
@@ -308,7 +308,7 @@ namespace RefactorThis.Controllers
         }
 
         [HttpPut("{productId}/options/{id}")]
-        public async Task<ActionResult> UpdateOption(Guid productId, Guid id, SaveProductOptionDto productOptionDto)
+        public async Task<ActionResult<string>> UpdateOption(Guid productId, Guid id, SaveProductOptionDto productOptionDto)
         {
             try
             {
@@ -329,6 +329,7 @@ namespace RefactorThis.Controllers
                 {
                     return BadRequest($"The product option does not belong to the product.");
                 }
+
                 if (productOptionDto.Name.Length > 9)
                 {
                     return BadRequest($"Name [{productOptionDto.Name}] can not be longer than 9 characters.");
@@ -354,7 +355,7 @@ namespace RefactorThis.Controllers
         }
 
         [HttpDelete("{productId}/options/{id}")]
-        public async Task<ActionResult> DeleteOption(Guid productId, Guid id)
+        public async Task<ActionResult<string>> DeleteOption(Guid productId, Guid id)
         {
             try
             {

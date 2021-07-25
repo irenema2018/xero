@@ -19,7 +19,7 @@ namespace RefactorThis.Repositories
 
         Task<List<ProductOption>> GetOptions(Guid productId);
         Task<ProductOption> GetOptionById(Guid id);
-        Task CreateOption(ProductOption productOption);
+        Task<Guid> CreateOption(ProductOption productOption);
         Task UpdateOption(ProductOption productOption);
         Task DeleteOption(Guid id);
     }
@@ -123,18 +123,22 @@ namespace RefactorThis.Repositories
             }
         }
 
-        public async Task CreateOption(ProductOption productOption)
+        public async Task<Guid> CreateOption(ProductOption productOption)
         {
+            var id = Guid.NewGuid();
+
             using (var connection = Helpers.NewConnection())
             {
-                if (productOption.Id == null || productOption.Id == Guid.Empty)
+                if (productOption.Id != null && productOption.Id != Guid.Empty)
                 {
-                    productOption.Id = Guid.NewGuid();
+                    id = productOption.Id;
                 }
 
-                var parameters = new { productOption.Id, productOption.ProductId, productOption.Name, productOption.Description };
-                await connection.ExecuteAsync($"insert into ProductOptions (Id, ProductId, Name, Description) values (@Id, @ProductId, @Name, @Description)", parameters);
+                var parameters = new { id, productOption.ProductId, productOption.Name, productOption.Description };
+                await connection.ExecuteAsync($"insert into ProductOptions (Id, ProductId, Name, Description) values (@id, @ProductId, @Name, @Description)", parameters);
             }
+
+            return id;
         }
 
         public async Task UpdateOption(ProductOption productOption)

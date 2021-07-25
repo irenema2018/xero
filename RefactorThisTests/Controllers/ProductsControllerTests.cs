@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 using RefactorThis.Controllers;
 using RefactorThis.DTO;
@@ -208,7 +208,7 @@ namespace RefactorThis.Tests.Controllers
             var result = await sut.CreateProduct(productDto);
             //3. Assert
             Assert.IsType<ActionResult<Guid>>(result);
-            var actionResult = Assert.IsType<BadRequestObjectResult>(result.Result); 
+            var actionResult = Assert.IsType<BadRequestObjectResult>(result.Result);
             var errorMsg = Assert.IsType<string>(actionResult.Value);
             Assert.Equal("The price must be greater than $0.", errorMsg);
         }
@@ -325,7 +325,7 @@ namespace RefactorThis.Tests.Controllers
                 ProductId = id,
             };
             productRepositoryMock.Setup(p => p.GetProductById(id)).ReturnsAsync(product);
-            productRepositoryMock.Setup(p => p.GetOptions(id)).ReturnsAsync(productOptions);            
+            productRepositoryMock.Setup(p => p.GetOptions(id)).ReturnsAsync(productOptions);
             //2. Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             await sut.GetOptions(id);
@@ -346,7 +346,7 @@ namespace RefactorThis.Tests.Controllers
             productRepositoryMock.Setup(p => p.GetProductById(id)).ReturnsAsync(product);
 
             // 2.Act
-            var sut = new ProductsController(productRepositoryMock.Object,logger.Object);
+            var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.GetOptions(id);
             // 3.Assert
             Assert.IsType<ActionResult<List<GetProductOptionDto>>>(result);
@@ -427,31 +427,187 @@ namespace RefactorThis.Tests.Controllers
             //3.Assert
             Assert.IsType<ActionResult<GetProductOptionDto>>(result);
             Assert.IsType<NotFoundObjectResult>(result.Result);
-
-
         }
 
+        [Fact]
+        public async Task CreateOption_ReturnsOkAndProductOptionId()
+        {
+            //1.Arrange
+            var productRepositoryMock = new Mock<IProductRepository>();
+            var logger = new Mock<ILogger>();
+
+            var productId = new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC");
+            var productOptionDto = new SaveProductOptionDto()
+            {
+                ProductId = productId,
+                Name = "Option",
+                Description = "Description",
+            };
+  
+            //2.Act
+            var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
+            var result = await sut.CreateOption(productOptionDto.ProductId, productOptionDto);
+
+            //3.Assert
+            Assert.IsType<ActionResult<Guid>>(result);
+            Assert.IsType<OkObjectResult>(result.Result);
+        }
+
+        [Fact]
+        public async Task CreateOption_ReturnsBadRequest_WhenNameLengthIsGreaterThanNine()
+        {
+            //1.Arrange
+            var productRepositoryMock = new Mock<IProductRepository>();
+            var logger = new Mock<ILogger>();
+
+            var productOptionDto = new SaveProductOptionDto()
+            {
+                Name = "GreaterThanNine",
+            };
+         
+            //2.Act
+            var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
+            var result = await sut.CreateOption(productOptionDto.ProductId, productOptionDto);
+            //3.Assert
+            Assert.IsType<ActionResult<Guid>>(result);
+            Assert.IsType<BadRequestObjectResult>(result.Result);
+        }
+
+        [Fact]
+        public async Task CreateOption_ReturnsBadRequest_WhenDescriptionLengthIsGreaterThanTwentyThree()
+        {
+            //1.Arrange
+            var productRepositoryMock = new Mock<IProductRepository>();
+            var logger = new Mock<ILogger>();
+
+            var productOptionDto = new SaveProductOptionDto()
+            {
+                Name = "NewName",
+                Description = "This description is greater than 23.",
+            };
+
+            //2.Act
+            var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
+            var result = await sut.CreateOption(productOptionDto.ProductId, productOptionDto);
+            //3.Assert
+            Assert.IsType<ActionResult<Guid>>(result);
+            Assert.IsType<BadRequestObjectResult>(result.Result);
+        }
+
+        [Fact]
+        public async Task UpdateOption_ReturnsOk()
+        {
+            //1.Arrange
+            var productRepositoryMock = new Mock<IProductRepository>();
+            var logger = new Mock<ILogger>();
+
+            //var productOption = new ProductOption();
+            //var productId = new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC");
+            var id = new Guid("4C8BA093-CABD-4A8C-B4E6-19B251A67210");
+            var product = new Product();
+            var productOption = new ProductOption();
+            var productOptionDto = new SaveProductOptionDto()
+            {
+                ProductId = new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC"),
+                Name = "Option",
+                Description = "Description",
+            };
+            productRepositoryMock.Setup(p => p.GetProductById(productOption.ProductId)).ReturnsAsync(product);
+            productRepositoryMock.Setup(p => p.GetOptionById(id)).ReturnsAsync(productOption);
+            //2.Act
+            var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
+            var result = await sut.UpdateOption(productOption.ProductId, id, productOptionDto);
+            //3.Assert
+            productRepositoryMock.Verify(p => p.UpdateOption(productOption), Times.Once);
+            Assert.IsType<ActionResult<string>>(result);
+        }
+
+        [Fact]
+        public async Task UpdateOption_ReturnsNotFound_WhenProductDoesNotExist()
+        {
+            //1.Arrange
+            var productRepositoryMock = new Mock<IProductRepository>();
+            var logger = new Mock<ILogger>();
+
+            var id = new Guid("4C8BA093-CABD-4A8C-B4E6-19B251A67210");
+            var product = new Product();
+            product = null;
+            var productOption = new ProductOption();
+            var productOptionDto = new SaveProductOptionDto()
+            {
+                ProductId = new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC"),
+                Name = "Option",
+                Description = "Description",
+            };
+            productRepositoryMock.Setup(p => p.GetProductById(productOption.ProductId)).ReturnsAsync(product);
+            //2.Act
+            var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
+            var result = await sut.UpdateOption(productOption.ProductId, id, productOptionDto);
+            //3.Assert
+            Assert.IsType<ActionResult<string>>(result);
+            Assert.IsType<NotFoundObjectResult>(result.Result);
+        }
+
+        [Fact]
+        public async Task UpdateOption_ReturnsNotFound_WhenProductOptionDoesNotExist()
+        {
+            //1.Arrange
+            var productRepositoryMock = new Mock<IProductRepository>();
+            var logger = new Mock<ILogger>();
+
+            var id = new Guid("4C8BA093-CABD-4A8C-B4E6-19B251A67210");
+            var product = new Product()
+            {
+                Id = id,
+            };
+      
+            var productOption = new ProductOption();
+            productOption = null;
+            var productId = new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC");
+
+            var productOptionDto = new SaveProductOptionDto()
+            {
+                ProductId = productId,
+                Name = "Option",
+                Description = "Description",
+            };
+
+            productRepositoryMock.Setup(p => p.GetProductById(productId)).ReturnsAsync(product);
+            productRepositoryMock.Setup(p => p.GetOptionById(id)).ReturnsAsync(productOption);
+            //2.Act
+            var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
+            var result = await sut.UpdateOption(productId, id, productOptionDto);
+            //3.Assert
+            Assert.IsType<ActionResult<string>>(result);
+            Assert.IsType<NotFoundObjectResult>(result.Result);
+        }
+
+
+        [Fact]
+        public async Task DeleteOption_ReturnsOk()
+        {
+            //1.Arrange
+            var productRepositoryMock = new Mock<IProductRepository>();
+            var logger = new Mock<ILogger>();
+
+            var id = new Guid("4C8BA093-CABD-4A8C-B4E6-19B251A67210");
+            var product = new Product()
+            {
+                Id = id,
+            };
+
+            var productId = new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC");
+            var productOption = new ProductOption();
+
+            productRepositoryMock.Setup(p => p.GetProductById(productId)).ReturnsAsync(product);
+            productRepositoryMock.Setup(p => p.GetOptionById(id)).ReturnsAsync(productOption);
+            //2.Act
+            var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
+            var result = await sut.DeleteOption(productId, id);
+            //3.Assert
+            Assert.IsType<ActionResult<string>>(result);
+            Assert.IsType<OkObjectResult>(result.Result);
+        }
     }
 
 }
-
-
-//1.Arrange
-//2.Act
-//3.Assert
-
-/*
-Unit Test (dev)
-    -> Integration Test / System Testing (test team)
-        -> User Acceptance Testing (Manual) (finish dev)
-            -> Smoke Test / Kick the tyres (release)
-                -> Business Verification Test (production)
-
-
-                        ProductRepository --> Database
-IProductRepository
-                        FakeProductRepository
-
-----------------------------------------------------------------
-
-*/
