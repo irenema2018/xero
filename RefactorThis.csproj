@@ -6,12 +6,16 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Remove="product.db\**" />
       <Compile Remove="RefactorThis.Tests\**" />
       <Compile Remove="RefactorThisTests\**" />
+      <Content Remove="product.db\**" />
       <Content Remove="RefactorThis.Tests\**" />
       <Content Remove="RefactorThisTests\**" />
+      <EmbeddedResource Remove="product.db\**" />
       <EmbeddedResource Remove="RefactorThis.Tests\**" />
       <EmbeddedResource Remove="RefactorThisTests\**" />
+      <None Remove="product.db\**" />
       <None Remove="RefactorThis.Tests\**" />
       <None Remove="RefactorThisTests\**" />
     </ItemGroup>

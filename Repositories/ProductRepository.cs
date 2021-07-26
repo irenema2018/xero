@@ -39,7 +39,6 @@ namespace RefactorThis.Repositories
         {
             using (var connection = Helpers.NewConnection())
             {
-                // if the pass in id is not a Guid, return an err msg BadRequest()
                 name = "%" + name + "%";
                 var parameters = new { name };
                 var result = await connection.QueryAsync<Product>($"select Id, Name, Description, Price, DeliveryPrice from Products where Name like @name", parameters);
@@ -52,7 +51,6 @@ namespace RefactorThis.Repositories
         {
             using (var connection = Helpers.NewConnection())
             {
-
                 var parameters = new { id };
                 var result = await connection.QueryAsync<Product>($"select Id, Name, Description, Price, DeliveryPrice from Products where Id = @id", parameters);
 
@@ -70,8 +68,9 @@ namespace RefactorThis.Repositories
                      productId = product.Id;
                 }
 
-                var parameters = new { Id=productId, product.Name, product.Price, product.Description, product.DeliveryPrice };//without product, C# can still recognize Name/Price, etc.
+                var parameters = new { Id=productId, product.Name, product.Price, product.Description, product.DeliveryPrice };
                 await connection.ExecuteAsync($"insert into Products (id, name, description, price, deliveryprice) values (@Id, @Name, @Description, @Price, @DeliveryPrice)", parameters);
+
                 return productId;
             }
         }
@@ -109,6 +108,7 @@ namespace RefactorThis.Repositories
             {
                 var parameters = new { productId };
                 var options = await connection.QueryAsync<ProductOption>("select Id, ProductId, Name, Description from ProductOptions where ProductId = @productId", parameters);
+
                 return options.ToList();
             }
         }
@@ -119,6 +119,7 @@ namespace RefactorThis.Repositories
             {
                 var parameters = new { id };
                 var result = await connection.QueryAsync<ProductOption>("select Id, ProductId, Name, Description from ProductOptions where Id = @id", parameters);
+
                 return result.FirstOrDefault();
             }
         }

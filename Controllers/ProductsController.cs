@@ -20,7 +20,7 @@ namespace RefactorThis.Controllers
         {
             _productRepository = productRepository;
             _logger = logger;
-        }//constructor. every time you use productController, a new productRepository will be created.
+        }
 
         [HttpGet]
         public async Task<ActionResult<List<GetProductDto>>> GetProducts(string name)

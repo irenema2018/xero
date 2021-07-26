@@ -7,7 +7,6 @@ using RefactorThis.Repositories;
 using Serilog;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -21,9 +20,11 @@ namespace RefactorThis.Tests.Controllers
             //1. Arrange
             var productRepositoryMock = new Mock<IProductRepository>();
             var logger = new Mock<ILogger>();
+            
             //2. Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.GetProducts("Sumsung");
+            
             //3. Assert
             productRepositoryMock.Verify(p => p.GetProductsByName("Sumsung"), Times.Once);
         }
@@ -35,24 +36,29 @@ namespace RefactorThis.Tests.Controllers
             var productRepositoryMock = new Mock<IProductRepository>();
             productRepositoryMock.Setup(p => p.GetProductsByName("Sumsung")).ReturnsAsync((List<Product>)null);
             var logger = new Mock<ILogger>();
+            
             //2. Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.GetProducts("Sumsung");
+           
             //3. Assert
             Assert.IsType<ActionResult<List<GetProductDto>>>(result);
             var actionResult = Assert.IsType<OkObjectResult>(result.Result);
             var list = Assert.IsType<List<GetProductDto>>(actionResult.Value);
             Assert.Empty(list);
         }
+
         [Fact]
         public async Task GetProducts_ReturnsOk_WhenNamePassedInIsEmptyString()
         {
             // 1. Arrange
             var productRepositoryMock = new Mock<IProductRepository>();
             var logger = new Mock<ILogger>();
+            
             // 2. Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.GetProducts("");
+           
             // 3. Assert
             productRepositoryMock.Verify(p => p.GetProducts(), Times.Once);
         }
@@ -63,9 +69,11 @@ namespace RefactorThis.Tests.Controllers
             // 1. Arrange
             var productRepositoryMock = new Mock<IProductRepository>();
             var logger = new Mock<ILogger>();
+           
             // 2. Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.GetProducts(null);
+            
             // 3. Assert
             productRepositoryMock.Verify(p => p.GetProducts(), Times.Once);
         }
@@ -76,9 +84,11 @@ namespace RefactorThis.Tests.Controllers
             // 1. Arrange
             var productRepositoryMock = new Mock<IProductRepository>();
             var logger = new Mock<ILogger>();
+           
             // 2. Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.GetProducts("   ");
+            
             //3.Assert
             productRepositoryMock.Verify(p => p.GetProducts(), Times.Once);
         }
@@ -89,15 +99,18 @@ namespace RefactorThis.Tests.Controllers
             // 1. Arrange
             var productRepositoryMock = new Mock<IProductRepository>();
             var logger = new Mock<ILogger>();
+
             var id = new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC");
             var product = new Product()
             {
                 Id = id,
             };
             productRepositoryMock.Setup(p => p.GetProductById(id)).ReturnsAsync(product);
+            
             // 2. Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.GetProduct(id);
+          
             //3.Assert
             Assert.IsType<ActionResult<GetProductDto>>(result);
             var actionResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -111,17 +124,18 @@ namespace RefactorThis.Tests.Controllers
             // 1. Arrange
             var productRepositoryMock = new Mock<IProductRepository>();
             var logger = new Mock<ILogger>();
+
             var product = new Product();
             product = null;
             productRepositoryMock.Setup(p => p.GetProductById(It.IsAny<Guid>())).ReturnsAsync(product);
+            
             // 2. Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.GetProduct(new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC"));
+            
             //3.Assert
             Assert.IsType<ActionResult<GetProductDto>>(result);
-            var actionResult = Assert.IsType<NotFoundObjectResult>(result.Result);
-            var errorMsg = Assert.IsType<string>(actionResult.Value);
-            Assert.Equal($"The product with the id [{new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC")}] does not exist.", errorMsg);
+            Assert.IsType<NotFoundObjectResult>(result.Result);  
         }
 
         [Fact]
@@ -130,6 +144,7 @@ namespace RefactorThis.Tests.Controllers
             // 1. Arrange
             var productRepositoryMock = new Mock<IProductRepository>();
             var logger = new Mock<ILogger>();
+
             productRepositoryMock.Setup(p => p.CreateProduct(It.IsAny<Product>())).ReturnsAsync(new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC"));
 
             var productDto = new SaveProductDto();
@@ -137,14 +152,14 @@ namespace RefactorThis.Tests.Controllers
             productDto.Description = "New looking";
             productDto.Price = 100.50M;
             productDto.DeliveryPrice = 10.95M;
+            
             // 2. Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.CreateProduct(productDto);
+            
             //3.Assert
             Assert.IsType<ActionResult<Guid>>(result);
-            var actionResult = Assert.IsType<OkObjectResult>(result.Result);
-            var id = Assert.IsType<Guid>(actionResult.Value);
-            Assert.Equal(new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC"), id);
+            Assert.IsType<OkObjectResult>(result.Result);
         }
 
         [Fact]
@@ -159,14 +174,14 @@ namespace RefactorThis.Tests.Controllers
             productDto.Description = "New looking";
             productDto.Price = 888.95M;
             productDto.DeliveryPrice = 10.95M;
+          
             //2. Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.CreateProduct(productDto);
+            
             //3. Assert
             Assert.IsType<ActionResult<Guid>>(result);
-            var actionResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-            var errorMsg = Assert.IsType<string>(actionResult.Value);
-            Assert.Equal("Name [My length is greater than 17] can not be longer than 17 characters.", errorMsg);
+            Assert.IsType<BadRequestObjectResult>(result.Result);
         }
 
         [Fact]
@@ -181,14 +196,14 @@ namespace RefactorThis.Tests.Controllers
             productDto.Description = "Trying to write a description longer than 35. Is this enough long?";
             productDto.Price = 888.95M;
             productDto.DeliveryPrice = 10.95M;
+          
             //2. Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.CreateProduct(productDto);
+         
             //3. Assert
             Assert.IsType<ActionResult<Guid>>(result);
-            var actionResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-            var errorMsg = Assert.IsType<string>(actionResult.Value);
-            Assert.Equal("Description [Trying to write a description longer than 35. Is this enough long?] can not be longer than 23 characters.", errorMsg);
+            Assert.IsType<BadRequestObjectResult>(result.Result);
         }
 
         [Fact]
@@ -203,14 +218,14 @@ namespace RefactorThis.Tests.Controllers
             productDto.Description = "New looking";
             productDto.Price = 0M;
             productDto.DeliveryPrice = 10.95M;
+           
             //2. Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.CreateProduct(productDto);
+         
             //3. Assert
             Assert.IsType<ActionResult<Guid>>(result);
-            var actionResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-            var errorMsg = Assert.IsType<string>(actionResult.Value);
-            Assert.Equal("The price must be greater than $0.", errorMsg);
+            Assert.IsType<BadRequestObjectResult>(result.Result);
         }
 
         [Fact]
@@ -219,28 +234,29 @@ namespace RefactorThis.Tests.Controllers
             //1. Arrange
             var productRepositoryMock = new Mock<IProductRepository>();
             var logger = new Mock<ILogger>();
+            
             var productDto = new SaveProductDto();
             productDto.Name = "One Plus";
             productDto.Description = "New looking";
             productDto.Price = 988.95M;
             productDto.DeliveryPrice = -0.95M;
+            
             //2. Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.CreateProduct(productDto);
+            
             //3. Assert
             Assert.IsType<ActionResult<Guid>>(result);
-            var actionResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-            var errorMsg = Assert.IsType<string>(actionResult.Value);
-            Assert.Equal("The delivery price must be greater than or equal to $0", errorMsg);
+            Assert.IsType<BadRequestObjectResult>(result.Result);
         }
 
         [Fact]
-        public async Task UpdateProduct_ReturnsOkAndAOkMsg()
+        public async Task UpdateProduct_ReturnsOk()
         {
             // 1. Arrange   
             var productRepositoryMock = new Mock<IProductRepository>();
             var logger = new Mock<ILogger>();
-            // 2. Act
+           
             var productDto = new SaveProductDto()
             {
                 Name = "Good Name",
@@ -249,17 +265,16 @@ namespace RefactorThis.Tests.Controllers
                 DeliveryPrice = 10.5M,
             };
             var id = new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC");
+            
+            // 2. Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.UpdateProduct(id, productDto);
+            
             // 3. Assert
             productRepositoryMock.Verify(p => p.UpdateProduct(It.IsAny<Product>()), Times.Once);
             Assert.IsType<ActionResult<string>>(result);
-            var actionResult = Assert.IsType<OkObjectResult>(result.Result);
-            var okMsg = Assert.IsType<string>(actionResult.Value);
-            Assert.Equal($"The product with the id [{id}] has been updated.", okMsg);
+            Assert.IsType<OkObjectResult>(result.Result);
         }
-
-        // other 4 validation unit cases (name, description, price, delivery price)
 
         [Fact]
         public async Task DeleteProduct_ReturnsOkAndAOkMsg()
@@ -274,32 +289,35 @@ namespace RefactorThis.Tests.Controllers
                 Id = id,
             };
             productRepositoryMock.Setup(p => p.GetProductById(id)).ReturnsAsync(product);
+            
             // 2.Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             await sut.DeleteProduct(id);
+            
             // 3.Assert
             productRepositoryMock.Verify(p => p.DeleteOptions(id), Times.Once);
             productRepositoryMock.Verify(p => p.DeleteProduct(id), Times.Once);
         }
 
         [Fact]
-        public async Task DeleteProduct_ReturnsNotFoundAndAMsg_WhenProductDoesNotExist()
+        public async Task DeleteProduct_ReturnsNotFound_WhenProductDoesNotExist()
         {
             //1. Arrange
             var productRepositoryMock = new Mock<IProductRepository>();
             var logger = new Mock<ILogger>();
+
             var id = new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC");
             var product = new Product();
             product = null;
             productRepositoryMock.Setup(p => p.GetProductById(id)).ReturnsAsync(product);
+            
             //2. Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.DeleteProduct(id);
+           
             //3. Assert
             Assert.IsType<ActionResult<string>>(result);
-            var actionResult = Assert.IsType<NotFoundObjectResult>(result.Result);
-            var notFoundMsg = Assert.IsType<string>(actionResult.Value);
-            Assert.Equal($"The product with the id [{id}] does not exist.", notFoundMsg);
+            Assert.IsType<NotFoundObjectResult>(result.Result);
         }
 
         [Fact]
@@ -308,6 +326,7 @@ namespace RefactorThis.Tests.Controllers
             //1. Arrange
             var productRepositoryMock = new Mock<IProductRepository>();
             var logger = new Mock<ILogger>();
+            
             var id = new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC");
             var product = new Product()
             {
@@ -326,9 +345,11 @@ namespace RefactorThis.Tests.Controllers
             };
             productRepositoryMock.Setup(p => p.GetProductById(id)).ReturnsAsync(product);
             productRepositoryMock.Setup(p => p.GetOptions(id)).ReturnsAsync(productOptions);
+           
             //2. Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             await sut.GetOptions(id);
+           
             //3. Assert
             productRepositoryMock.Verify(p => p.GetOptions(It.IsAny<Guid>()), Times.Once);
         }
@@ -348,11 +369,10 @@ namespace RefactorThis.Tests.Controllers
             // 2.Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.GetOptions(id);
+           
             // 3.Assert
             Assert.IsType<ActionResult<List<GetProductOptionDto>>>(result);
-            var actionResult = Assert.IsType<NotFoundObjectResult>(result.Result);
-            var notFoundMsg = Assert.IsType<string>(actionResult.Value);
-            Assert.Equal($"The product with the id [{id}] does not exist.", notFoundMsg);
+            Assert.IsType<NotFoundObjectResult>(result.Result);
         }
 
         [Fact]
@@ -375,10 +395,10 @@ namespace RefactorThis.Tests.Controllers
             //2.Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.GetOption(productId, id);
+            
             //3.Assert
             Assert.IsType<ActionResult<GetProductOptionDto>>(result);
-            var actionResult = Assert.IsType<OkObjectResult>(result.Result);
-            Assert.IsType<GetProductOptionDto>(actionResult.Value);
+            Assert.IsType<OkObjectResult>(result.Result);
         }
 
         [Fact]
@@ -468,6 +488,7 @@ namespace RefactorThis.Tests.Controllers
             //2.Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.CreateOption(productOptionDto.ProductId, productOptionDto);
+            
             //3.Assert
             Assert.IsType<ActionResult<Guid>>(result);
             Assert.IsType<BadRequestObjectResult>(result.Result);
@@ -489,6 +510,7 @@ namespace RefactorThis.Tests.Controllers
             //2.Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.CreateOption(productOptionDto.ProductId, productOptionDto);
+         
             //3.Assert
             Assert.IsType<ActionResult<Guid>>(result);
             Assert.IsType<BadRequestObjectResult>(result.Result);
@@ -501,8 +523,6 @@ namespace RefactorThis.Tests.Controllers
             var productRepositoryMock = new Mock<IProductRepository>();
             var logger = new Mock<ILogger>();
 
-            //var productOption = new ProductOption();
-            //var productId = new Guid("37AF0817-161D-4EFA-94C5-FFEC90BD66FC");
             var id = new Guid("4C8BA093-CABD-4A8C-B4E6-19B251A67210");
             var product = new Product();
             var productOption = new ProductOption();
@@ -512,11 +532,14 @@ namespace RefactorThis.Tests.Controllers
                 Name = "Option",
                 Description = "Description",
             };
+            
             productRepositoryMock.Setup(p => p.GetProductById(productOption.ProductId)).ReturnsAsync(product);
             productRepositoryMock.Setup(p => p.GetOptionById(id)).ReturnsAsync(productOption);
+            
             //2.Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.UpdateOption(productOption.ProductId, id, productOptionDto);
+           
             //3.Assert
             productRepositoryMock.Verify(p => p.UpdateOption(productOption), Times.Once);
             Assert.IsType<ActionResult<string>>(result);
@@ -539,10 +562,13 @@ namespace RefactorThis.Tests.Controllers
                 Name = "Option",
                 Description = "Description",
             };
+          
             productRepositoryMock.Setup(p => p.GetProductById(productOption.ProductId)).ReturnsAsync(product);
+           
             //2.Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.UpdateOption(productOption.ProductId, id, productOptionDto);
+          
             //3.Assert
             Assert.IsType<ActionResult<string>>(result);
             Assert.IsType<NotFoundObjectResult>(result.Result);
@@ -574,9 +600,11 @@ namespace RefactorThis.Tests.Controllers
 
             productRepositoryMock.Setup(p => p.GetProductById(productId)).ReturnsAsync(product);
             productRepositoryMock.Setup(p => p.GetOptionById(id)).ReturnsAsync(productOption);
+            
             //2.Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.UpdateOption(productId, id, productOptionDto);
+          
             //3.Assert
             Assert.IsType<ActionResult<string>>(result);
             Assert.IsType<NotFoundObjectResult>(result.Result);
@@ -601,13 +629,14 @@ namespace RefactorThis.Tests.Controllers
 
             productRepositoryMock.Setup(p => p.GetProductById(productId)).ReturnsAsync(product);
             productRepositoryMock.Setup(p => p.GetOptionById(id)).ReturnsAsync(productOption);
+            
             //2.Act
             var sut = new ProductsController(productRepositoryMock.Object, logger.Object);
             var result = await sut.DeleteOption(productId, id);
+           
             //3.Assert
             Assert.IsType<ActionResult<string>>(result);
             Assert.IsType<OkObjectResult>(result.Result);
         }
     }
-
 }

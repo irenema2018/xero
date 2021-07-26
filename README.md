@@ -31,6 +31,7 @@
 ## Further improvements
 - If I have more time, I would like to use stored procedures for the SQL code.
 - Add logging in the database.
+- Add more test cases.
 
 ## Running the application
 Server: `> dotnet run`
