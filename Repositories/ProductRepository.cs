@@ -41,7 +41,7 @@ namespace RefactorThis.Repositories
             {
                 name = "%" + name + "%";
                 var parameters = new { name };
-                var result = await connection.QueryAsync<Product>($"select Id, Name, Description, Price, DeliveryPrice from Products where Name like @name", parameters);
+                var result = await connection.QueryAsync<Product>("select Id, Name, Description, Price, DeliveryPrice from Products where Name like @name", parameters);
 
                 return result.ToList();
             }
@@ -52,7 +52,7 @@ namespace RefactorThis.Repositories
             using (var connection = Helpers.NewConnection())
             {
                 var parameters = new { id };
-                var result = await connection.QueryAsync<Product>($"select Id, Name, Description, Price, DeliveryPrice from Products where Id = @id", parameters);
+                var result = await connection.QueryAsync<Product>("select Id, Name, Description, Price, DeliveryPrice from Products where Id = @id", parameters);
 
                 return result.FirstOrDefault();
             }
@@ -69,7 +69,7 @@ namespace RefactorThis.Repositories
                 }
 
                 var parameters = new { Id=productId, product.Name, product.Price, product.Description, product.DeliveryPrice };
-                await connection.ExecuteAsync($"insert into Products (id, name, description, price, deliveryprice) values (@Id, @Name, @Description, @Price, @DeliveryPrice)", parameters);
+                await connection.ExecuteAsync("insert into Products (id, name, description, price, deliveryprice) values (@Id, @Name, @Description, @Price, @DeliveryPrice)", parameters);
 
                 return productId;
             }
@@ -80,7 +80,7 @@ namespace RefactorThis.Repositories
             using (var connection = Helpers.NewConnection())
             {
                 var parameters = new { product.Id, product.Name, product.Price, product.Description, product.DeliveryPrice };
-                await connection.ExecuteAsync($"update Products set Name = @Name, Description = @Description, Price = @Price, DeliveryPrice = @DeliveryPrice where Id = @Id", parameters);
+                await connection.ExecuteAsync("update Products set Name = @Name, Description = @Description, Price = @Price, DeliveryPrice = @DeliveryPrice where Id = @Id", parameters);
             }
         }
 
@@ -89,7 +89,7 @@ namespace RefactorThis.Repositories
             using (var connection = Helpers.NewConnection())
             {
                 var parameters = new { id };
-                await connection.ExecuteAsync($"delete from Products where Id = @id", parameters);
+                await connection.ExecuteAsync("delete from Products where Id = @id", parameters);
             }
         }
 
@@ -98,7 +98,7 @@ namespace RefactorThis.Repositories
             using (var connection = Helpers.NewConnection())
             {
                 var parameters = new { productId };
-                await connection.ExecuteAsync($"delete from ProductOptions where ProductId = @productId", parameters);
+                await connection.ExecuteAsync("delete from ProductOptions where ProductId = @productId", parameters);
             }
         }
 
