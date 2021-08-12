@@ -108,7 +108,7 @@ namespace RefactorThis.Controllers
 
                 if (productDto.Description.Length > 35)
                 {
-                    return BadRequest($"Description [{productDto.Description}] can not be longer than 23 characters.");
+                    return BadRequest($"Description [{productDto.Description}] can not be longer than 35 characters.");
                 }
 
                 if (productDto.Price <= 0)
@@ -151,7 +151,7 @@ namespace RefactorThis.Controllers
 
                 if (productDto.Description.Length > 35)
                 {
-                    return BadRequest($"Description [{productDto.Description}] can not be longer than 23 characters.");
+                    return BadRequest($"Description [{productDto.Description}] can not be longer than 35 characters.");
                 }
 
                 if (productDto.Price <= 0)
